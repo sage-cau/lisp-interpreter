@@ -30,7 +30,7 @@ int main()
         fgets(input, INPUT_MAX, stdin);
   
         /* LEXER */
-        
+   
         /* PASER */
 
         /* RUN */
