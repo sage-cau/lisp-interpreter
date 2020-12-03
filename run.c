@@ -15,7 +15,6 @@ void run(const struct TreeNode* const head)
 	switch (func_index)
 	{
 	case SETQ:
-		list_setq();
 		break;
 	case LIST:
 		break;
