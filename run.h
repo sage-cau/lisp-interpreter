@@ -4,8 +4,8 @@
 typedef struct element {
 	int code;
 	union {
-		char lexeme[100];   // ±âº»
-		struct element* listElem[100]; //code°¡ LIST_CODEÀÎ °æ¿ì¿¡¸¸ »ç¿ë!
+		char lexeme[100];   // ê¸°ë³¸
+		struct element* listElem[100]; //codeê°€ LIST_CODEì¸ ê²½ìš°ì—ë§Œ ì‚¬ìš©!
 	};
 } element;
 
@@ -49,6 +49,5 @@ char* keywords[] = { "SETQ", "LIST", "CAR", "CDR", "CADDR", "NTH", "CONS",
 					 "MINUSP", "EQUAL", "STRINGP", "IF", "COND" };
 
 void run(const struct TreeNode*);
-void lisp_setq();	// setq¸¦ Ã³¸®ÇÏ´Â ÇÔ¼ö
 
 #endif
