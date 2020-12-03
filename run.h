@@ -48,6 +48,6 @@ char* keywords[] = { "SETQ", "LIST", "CAR", "CDR", "CADDR", "NTH", "CONS",
 					 "REMOVE", "SUBST", "ATOM", "NULL", "NUMBERP", "ZEROP",
 					 "MINUSP", "EQUAL", "STRINGP", "IF", "COND" };
 
-void run(const struct TreeNode*);
+void run(const struct TreeNode* const);
 
 #endif
