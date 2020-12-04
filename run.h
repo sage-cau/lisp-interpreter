@@ -47,9 +47,23 @@ typedef struct TreeNode {
 	struct TreeNode* child1, * child2, * child3;
 } TreeNode;
 
+// 변수 저장
+typedef struct Variable {
+	char* name;
+	union {
+		int int_value;
+		float real_value;
+		char* char_value;
+	} value;
+	struct Variable* next;
+} Variable;
+
 typedef enum
 {
-	REVERSE = 100,
+	CAR = 100,
+	CDR,
+	CADDR,
+	REVERSE,
 	LENGTH,
 	_ATOM,
 	_NULL,
@@ -59,8 +73,19 @@ typedef enum
 	STRINGP,
 } Keyword1;	// func_type1에 속하는 함수
 
-void run(const struct TreeNode* const);
+typedef enum
+{
+	SETQ = 200,
+	NTH,
+	CONS,
+	MEMBER,
+	REMOVE,
+	EQUAL,
+} Keyword2;	// func_type2에 속하는 함수
 
-void func_type1(const struct TreeNode* const);
+void run(const struct TreeNode* const, const struct TreeNode* const);
+
+void func_type1();
+void func_type2();
 
 #endif
