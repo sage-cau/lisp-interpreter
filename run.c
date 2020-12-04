@@ -29,27 +29,27 @@ void func_type1(const struct TreeNode* const head)
 			func_index = i;
 			break;
 		}
+	}
 
-		switch (func_index + 100)
-		{
-		case REVERSE:
-			break;
-		case LENGTH:
-			break;
-		case _ATOM:
-			break;
-		case _NULL:
-			break;
-		case NUMBERP:
-			break;
-		case ZEROP:
-			break;
-		case MINUSP:
-			break;
-		case STRINGP:
-			break;
-		default:
-			break;
-		}
+	switch (func_index + 100)
+	{
+	case REVERSE:
+		break;
+	case LENGTH:
+		break;
+	case _ATOM:
+		break;
+	case _NULL:
+		break;
+	case NUMBERP:
+		break;
+	case ZEROP:
+		break;
+	case MINUSP:
+		break;
+	case STRINGP:
+		break;
+	default:
+		break;
 	}
 }
