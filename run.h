@@ -1,11 +1,44 @@
 #ifndef RUN_H
 #define RUN_H
 
+/* Token codes */
+#define INT_LIT 10      // 0 1 2...
+#define IDENT 11        // X Y Z...
+
+//#define KEYWORD 12
+#define FUNC_TYPE1 12
+#define FUNC_TYPE2 13
+#define FUNC_TYPE3 14
+#define FUNC_TYPE4 15
+
+#define STRING 16     // "X" "Y" "GOOD" (√ﬂ∞°«ÿæﬂ «‘)
+#define ATOM 17     // 'X 'Y 'GOOD (√ﬂ∞°«ÿæﬂ «‘)
+#define NIL 18      // (√ﬂ∞°«ÿæﬂ «‘)
+
+#define ADD_OP 21       // +
+#define SUB_OP 22       // -
+#define MULT_OP 23      // *
+#define DIV_OP 24       // /
+#define LEFT_PAREN 25   // (
+#define RIGHT_PAREN 26  // )
+#define LESS_COMP 27    // <
+#define GREATER_COMP 28 // >
+#define EQUAL_COMP 29   // =
+#define NOT_COMP 30     // !
+#define APOSTROPHE 31   // '
+#define BACKSLASH 32    // "\"
+#define HASH 33         // #
+#define DOUBLE_QUOT 34  // "
+#define DOT 35          // .
+#define SEMI_COL 40     // ;
+
+#define LIST_CODE 50        // ∏ÆΩ∫∆Æ¿”¿ª ¿«πÃ«œ¥¬ token code (∆Ì¿«ªÛ √ﬂ∞°)
+
 typedef struct element {
 	int code;
 	union {
-		char lexeme[100];   // Í∏∞Î≥∏
-		struct element* listElem[100]; //codeÍ∞Ä LIST_CODEÏù∏ Í≤ΩÏö∞ÏóêÎßå ÏÇ¨Ïö©!
+		char lexeme[100];   // ±‚∫ª
+		struct element* listElem[100]; //code∞° LIST_CODE¿Œ ∞ÊøÏø°∏∏ ªÁøÎ!
 	};
 } element;
 
@@ -16,38 +49,18 @@ typedef struct TreeNode {
 
 typedef enum
 {
-	SETQ = 0, 
-	LIST, 
-	CAR, 
-	CDR, 
-	CADDR, 
-	NTH, 
-	CONS,
-	REVERSE, 
-	APPEND, 
-	LENGTH, 
-	MEMBER, 
-	ASSOC,
-	REMOVE,
-	SUBST, 
-	ATOM, 
-	_NULL,	// "NULL"
+	REVERSE = 100,
+	LENGTH,
+	_ATOM,
+	_NULL,
 	NUMBERP,
 	ZEROP,
-	MINUSP, 
-	EQUAL, 
-	STRINGP, 
-	IF, 
-	COND,
-} Keyword;
-
-#define KEYWORDS_LENGTH sizeof(keywords) / sizeof(char*)
-
-char* keywords[] = { "SETQ", "LIST", "CAR", "CDR", "CADDR", "NTH", "CONS",
-					 "REVERSE", "APPEND", "LENGTH", "MEMBER", "ASSOC",
-					 "REMOVE", "SUBST", "ATOM", "NULL", "NUMBERP", "ZEROP",
-					 "MINUSP", "EQUAL", "STRINGP", "IF", "COND" };
+	MINUSP,
+	STRINGP,
+} Keyword1;	// func_type1ø° º”«œ¥¬ «‘ºˆ
 
 void run(const struct TreeNode* const);
+
+void func_type1(const struct TreeNode* const);
 
 #endif

@@ -6,8 +6,8 @@
 typedef struct element {
     int code;
     union {
-        char lexeme[100];   // ê¸°ë³¸
-        struct element* listElem[100]; //codeê°€ LIST_CODEì¸ ê²½ìš°ì—ë§Œ ì‚¬ìš©!
+        char lexeme[100];   // ±âº»
+        struct element* listElem[100]; //code°¡ LIST_CODEÀÎ °æ¿ì¿¡¸¸ »ç¿ë!
     };
 } element;
 
@@ -25,16 +25,16 @@ int main()
     {
         char input[INPUT_MAX];
 
-        // ì…ë ¥ë°›ê¸°
+        // ÀÔ·Â¹Ş±â
         printf("> ");
         fgets(input, INPUT_MAX, stdin);
+        //fprintf(stdout, &input);
   
         /* LEXER */
-   
         /* PASER */
 
         /* RUN */
-        //run(head);   // paserì˜ ë°˜í™˜ê°’(head)
+        //run(head);   // paserÀÇ ¹İÈ¯°ª(head)
     }
 
     return 0;
