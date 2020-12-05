@@ -7,40 +7,41 @@
 #include "run.h"
 
 bool isRunningError = false;// running 과정에서 에러가 있는 경우 true. (main.c에 전달할 정보)
-struct TreeNode* head;
 struct Variable* v_head;	// 변수 저장
 
-void run(const struct TreeNode* const h, const struct Variable* const v_h)
+void run(const struct TreeNode* const head, const struct Variable* const v_h)
 {
-	head = h;
 	v_head = v_h;
 	
 	switch(head->key.code)
 	{
 		case FUNC_TYPE1:
-			print_l(func_type1());
+			print_l(func_type1(head));
 			break;
 		case FUNC_TYPE2:
-			func_type2();
+			func_type2(head);
 			break;
 		case LESS_COMP: case GREATER_COMP: case EQUAL_COMP: 
 		case LESS_EQUAL_COMP: case GREATER_EQUAL_COMP:
-			comparison();
+			comparison(head);
 			break;
 		case ADD_OP: case SUB_OP: case MULT_OP: case DIV_OP:
-			numeric_operation();
+			numeric_operation(head);
 			break;
 		case FUNC_TYPE3:
+			func_type3(head);
 			break;
 		case FUNC_TYPE4:
+			func_type4(head);
 			break;
 	}
 }
 
-element* func_type1()
+// 매개변수가 1개인 함수
+element* func_type1(const struct TreeNode* const head)
 {
 	char* keywords[] = { "CAR", "CDR", "CADDR", "REVERSE", "LENGTH", "ATOM",
-						"NULL", "NUMBERP", "ZEROP", "MINUSP", "STRINGP" };
+						"NULL", "NUMBERP", "ZEROP", "MINUSP", "STRINGP", "PRINT" };
 	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords 배열 길이
 	int func_index = find_func_index(keywords, keywords_len);
 
@@ -123,32 +124,35 @@ element* func_type1()
 		if (child1_code == STRING)
 			isTrue = true;
 		break;
+	case PRINT:
+		result->code = child1_code;
+		strcpy(result->lexeme, head->child1->key.lexeme);
+		break;
 	default:
 		break;
 	}
 
 	// Predicate 함수의 경우
 	if (isPredicateFunc) {
-		//result->code = BOOLEAN;	// BOOLEAN 코드 추가해야 함
-		isTrue ? strcpy(result->lexeme, "T") : strcpy(result->lexeme, "NIL");
+		if (isTrue) {
+			result->code = T;
+			strcpy(result->lexeme, "T");
+		}
+		else {
+			result->code = NIL;
+			strcpy(result->lexeme, "NIL");
+		}
 	}
 
 	return result;
 }
 
-element* func_type2()
+// 매개변수가 2개인 함수
+element* func_type2(const struct TreeNode* const head)
 {
 	char* keywords[] = { "DEFVAR", "SETQ", "NTH", "CONS", "MEMBER", "REMOVE", "EQUAL"};
 	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords 배열 길이
-	int func_index = -1;
-
-	for (int i = 0; i < keywords_len; i++) {
-		if (head->key.lexeme == keywords[i]) {
-			func_index = i;
-			break;
-		}
-	}
-
+	int func_index = find_func_index(keywords, keywords_len);
 	
 	switch (func_index + 200)
 	{
@@ -286,7 +290,7 @@ element* func_type2()
 	}
 }
 
-element* comparison() {
+element* comparison(const struct TreeNode* const head) {
 	if(head->child1->key.code == INT_LIT || head->child1->key.code == FLOAT_LIT) {
 		return error("wrong comparison operand type");
 	}
@@ -318,7 +322,7 @@ element* comparison() {
 	return result;
 }
 
-element* numeric_operation() {
+element* numeric_operation(const struct TreeNode* const head) {
 	element* result = malloc(sizeof(struct element));
 	double answer = 0;
 	bool isFloat = false;
@@ -346,6 +350,89 @@ element* numeric_operation() {
 	result->code = isFloat? FLOAT_LIT : INT_LIT;
 	sprintf(result->lexeme, isFloat? "%.2f": "%.f", answer); // 수를 문자열로 변환
 	// 실수가 포함되었던 연산은 소수점 둘째자리까지, 정수만 포함되었던 연산은 소수점 없이 출력
+	return result;
+}
+
+// 매개변수가 3개인 함수
+element* func_type3(const struct TreeNode* const head)
+{
+	char* keywords[] = { "SUBST", "IF" };
+	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords 배열 길이
+	int func_index = find_func_index(keywords, keywords_len);
+
+	//Variable* p1 = find_variable(head->child1->key.lexeme);
+	//Variable* p2 = find_variable(head->child2->key.lexeme);
+	//Variable* p3 = find_variable(head->child3->key.lexeme);
+	element* result = malloc(sizeof(struct element));
+	bool expr_is_true = false;
+
+	switch (func_index + 300)
+	{
+	case SUBST:
+		switch (head->child1->key.code) {
+		case INT_LIT: case ATOM: /*case T: */
+			break;
+		default:
+			return error("1st argument has wrong type");
+			break;
+		}
+
+		switch (head->child2->key.code) {
+		case INT_LIT: case ATOM: /*case T: */
+			break;
+		default:
+			return error("2nd argument has wrong type");
+			break;
+		}
+
+		if (head->child3->key.code != LIST_CODE)
+			return error("3rd argument should be LIST");
+
+		result->code = LIST_CODE;
+
+		for (int i = 0; head->child2->key.listElem[i] != NULL; i++) {
+			result->listElem[i] = malloc(sizeof(struct element));
+
+			if (!strcmp(head->child2->key.lexeme, head->child3->key.listElem[i]->lexeme))
+				strcpy(result->listElem[i], head->child1->key.lexeme);
+			else
+				strcpy(result->listElem[i], head->child3->key.listElem[i]->lexeme);
+		}
+		break;
+	case IF:
+		expr_is_true = comparison(head->child1);
+
+		// child1(expr)이 true면,
+		// child2(stmt1) 수행;
+		if (expr_is_true) {
+			if (head->child2->child2 == NULL)
+				func_type1(head->child2);	// 매개변수가 1개면			
+			else
+				numeric_operation(head->child2);
+		}
+		// child3(stmt2) 수행
+		else {
+			if (head->child3->child2 == NULL)
+				func_type1(head->child3);
+			else
+				numeric_operation(head->child3);
+		}
+		break;
+	default:
+		break;
+	}
+
+	return result;
+}
+
+element* func_type4() {
+	char* keywords[] = { "LIST", "APPEND", "CONS" };
+	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords 배열 길이
+	int func_index = find_func_index(keywords, keywords_len);
+
+	Variable* var = find_variable(head->child1->key.lexeme);
+	element* result = malloc(sizeof(struct element));
+
 	return result;
 }
 

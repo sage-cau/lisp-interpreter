@@ -52,15 +52,12 @@ typedef enum _boolean {
 #define DIV_OP 24       // /
 #define LEFT_PAREN 25   // (
 #define RIGHT_PAREN 26  // )
-
 #define LESS_COMP 27    // <
 #define GREATER_COMP 28 // >
 #define EQUAL_COMP 29   // =
-#define LESS_EQUAL_COMP 30    // <=
-#define GREATER_EQUAL_COMP 31 // >=
-
-#define APOSTROPHE 32   // '
-
+#define NOT_COMP 30     // !
+#define APOSTROPHE 31   // '
+#define BACKSLASH 32    // "\"
 #define HASH 33         // #
 #define DOUBLE_QUOT 34  // "
 #define DOT 35          // .
@@ -87,6 +84,11 @@ void float_check();
 
 /* parser ÇÔ¼öµé */
 
+static TreeNode* error(char* message);
+static void getToken();
+static TreeNode* block();
+static TreeNode* par();
+static TreeNode* list();
 TreeNode* new_node(element key);
 void postorderDelete(TreeNode* root);
 void destroyTree(TreeNode* root);

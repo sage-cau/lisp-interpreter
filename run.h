@@ -36,12 +36,21 @@ typedef enum
 	EQUAL,
 } Keyword2;	// func_type2에 속하는 함수
 
+typedef enum
+{
+	SUBST = 300,
+	IF,
+} Keyword3;	// fund_type3에 속하는 함수
+
 void run(const struct TreeNode* const, const struct Variable* const);
 
-element* func_type1();
-element* func_type2();
-element* comparison();
-element* numeric_operation();
+element* func_type1(const struct TreeNode* const);	// 매개변수가 1개인 함수
+element* func_type2(const struct TreeNode* const);	// 매개변수가 2개인 함수
+element* func_type3(const struct TreeNode* const);	// 매개변수가 3개인 함수
+element* func_type4(const struct TreeNode* const);
+
+element* comparison(const struct TreeNode* const);
+element* numeric_operation(const struct TreeNode* const);
 
 int find_func_index(char* [], int);
 int var_listElem_length(const struct Variable* const);
