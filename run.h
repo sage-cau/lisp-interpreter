@@ -87,7 +87,7 @@ element* func_type2();
 int find_func_index(char* [], int);
 int var_listElem_length(const struct Variable* const);
 int tree_listElem_length(const struct TreeNode* const);
-Variable* find_varialbe(char*);
+Variable* find_variable(char*);
 element* make_listElem_cdr(element*, int);
 element* make_listElem_reverse(element*, int);
 

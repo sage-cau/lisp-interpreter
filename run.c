@@ -390,7 +390,7 @@ bool isEqual(element* arg1, element* arg2) {
 		if (!strcmp(arg1->lexeme, arg2->lexeme))
 			return true;
 	}
-
+}
 
 // 결과 출력하기
 void print_l(element* result)
