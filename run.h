@@ -10,6 +10,7 @@ typedef struct Variable {
 	struct Variable* next;
 } Variable;
 
+#define KEYWORD1 100
 typedef enum
 {
 	CAR = 100,
@@ -23,8 +24,10 @@ typedef enum
 	ZEROP,
 	MINUSP,
 	STRINGP,
+	PRINT,
 } Keyword1;	// func_type1에 속하는 함수
 
+#define KEYWORD2 200
 typedef enum
 {
 	DEFVAR = 200,
@@ -36,6 +39,7 @@ typedef enum
 	EQUAL,
 } Keyword2;	// func_type2에 속하는 함수
 
+#define KEYWORD3 300
 typedef enum
 {
 	SUBST = 300,

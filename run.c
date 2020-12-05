@@ -72,7 +72,7 @@ element* func_type1(const struct TreeNode* const head)
 	bool isPredicateFunc = false;	// Predicate 함수인지
 	bool isTrue = false;	// Predicate 함수에서 값이 true인지
 
-	switch (func_index + 100)
+	switch (func_index + KEYWORD1)
 	{
 	case CAR:	// 리스트의 첫번째 원소 가져옴
 		result->code = child1_code;
@@ -154,7 +154,7 @@ element* func_type2(const struct TreeNode* const head)
 	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords 배열 길이
 	int func_index = find_func_index(keywords, keywords_len);
 	
-	switch (func_index + 200)
+	switch (func_index + KEYWORD2)
 	{
 	case DEFVAR:
 		if(head->child1->key.code != IDENT)
@@ -366,7 +366,7 @@ element* func_type3(const struct TreeNode* const head)
 	element* result = malloc(sizeof(struct element));
 	bool expr_is_true = false;
 
-	switch (func_index + 300)
+	switch (func_index + KEYWORD3)
 	{
 	case SUBST:
 		switch (head->child1->key.code) {

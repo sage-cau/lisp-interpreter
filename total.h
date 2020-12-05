@@ -41,27 +41,29 @@ typedef enum _boolean {
 #define FUNC_TYPE3 14
 #define FUNC_TYPE4 15
 
-#define STRING 16 // "X", "Y", "GOOD"
-#define ATOM 17 // 'X, 'Y, 'GOOD
-#define NIL 18
-#define T 19
+#define STRING 16 // "X", "Y", "GOOD" 
+#define ATOM 17 // 'X, 'Y, 'GOOD 
+#define NIL 18 
+#define T 19 
 
-#define ADD_OP 21       // +
-#define SUB_OP 22       // -
-#define MULT_OP 23      // *
-#define DIV_OP 24       // /
-#define LEFT_PAREN 25   // (
-#define RIGHT_PAREN 26  // )
-#define LESS_COMP 27    // <
-#define GREATER_COMP 28 // >
-#define EQUAL_COMP 29   // =
-#define NOT_COMP 30     // !
-#define APOSTROPHE 31   // '
-#define BACKSLASH 32    // "\"
-#define HASH 33         // #
-#define DOUBLE_QUOT 34  // "
-#define DOT 35          // .
-#define SEMI_COL 40     // ;
+#define ADD_OP 21       // + 
+#define SUB_OP 22       // - 
+#define MULT_OP 23      // * 
+#define DIV_OP 24       // / 
+#define LEFT_PAREN 25   // ( 
+#define RIGHT_PAREN 26  // ) 
+
+#define LESS_COMP 27    // < 
+#define GREATER_COMP 28 // > 
+#define EQUAL_COMP 29   // = 
+#define LESS_EQUAL_COMP 30    // <= 
+#define GREATER_EQUAL_COMP 31 // >= 
+
+#define APOSTROPHE 32   // ' 
+
+#define HASH 33         // # 
+#define DOUBLE_QUOT 34  // " 
+#define DOT 35          // . 
 
 #define LIST_CODE 50
 
