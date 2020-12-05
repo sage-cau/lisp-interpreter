@@ -3,56 +3,13 @@
 #include <string.h>
 #include <stdbool.h>
 
-typedef struct element {
-    int code;
-    union {
-        char lexeme[100];   // 기본
-        struct element *listElem[100]; //code가 LIST_CODE인 경우에만 사용!
-    };
-} element;
-
-typedef struct TreeNode {
-    element key;
-    struct TreeNode *child1, *child2, *child3;
-} TreeNode;
+#include "total.h"
 
 bool isSyntaxError = false;
 static element* tokenList;
-static int curr = -1;
+int curr;
 static element nextToken; //lexer의 nextChar과 역할이 비슷한 변수입니다.
 
-/* Token codes */
-#define INT_LIT 10      // 0 1 2...
-#define IDENT 11        // X Y Z...
-
-//#define KEYWORD 12
-#define FUNC_TYPE1 12
-#define FUNC_TYPE2 13
-#define FUNC_TYPE3 14
-#define FUNC_TYPE4 15
-
-#define STRING 16     // "X" "Y" "GOOD" (추가해야 함)
-#define ATOM 17     // 'X 'Y 'GOOD (추가해야 함)
-#define NIL 18      // (추가해야 함)
-
-#define ADD_OP 21       // +
-#define SUB_OP 22       // -
-#define MULT_OP 23      // *
-#define DIV_OP 24       // /
-#define LEFT_PAREN 25   // (
-#define RIGHT_PAREN 26  // )
-#define LESS_COMP 27    // <
-#define GREATER_COMP 28 // >
-#define EQUAL_COMP 29   // =
-#define NOT_COMP 30     // !
-#define APOSTROPHE 31   // '
-#define BACKSLASH 32    // "\"
-#define HASH 33         // #
-#define DOUBLE_QUOT 34  // "
-#define DOT 35          // .
-#define SEMI_COL 40     // ;
-
-#define LIST_CODE 50        // 리스트임을 의미하는 token code (편의상 추가)
 
 /*local 함수 선언*/
 static TreeNode* error(char* message);
@@ -63,47 +20,28 @@ static TreeNode* list();
 TreeNode* new_node(element key);
 void postorderDelete(TreeNode* root);
 void destroyTree(TreeNode* root);
-void printTree(TreeNode *root);
-void preorderPrint(TreeNode *root);
+void printTree(TreeNode* root);
+void preorderPrint(TreeNode* root);
 
 
 /*****    main driver    *****/
-/*실제로는 이 함수를 사용할 예정입니다.
-TreeNode* parser(element tokens[]) {
+TreeNode* parser() {
+    curr = -1; // 초기화
     TreeNode* head = NULL;
     tokenList = tokens;
     head = block();
-    if(isSyntaxError) {
+    if (isSyntaxError) {
         destroyTree(head);
-        //lexer에서 리턴하는 tokens가 동적 메모리 할당인 경우
-        //free(tokenList); 
         return NULL;
     }
     return head;
-}*/
-int main() {
-    element tokens[12] = {{LEFT_PAREN, "("}, 
-                        {FUNC_TYPE2, "SETQ"}, 
-                        {IDENT, "X"}, 
-                        {APOSTROPHE, "‘"},
-                        {LEFT_PAREN, "("},
-                        {LEFT_PAREN, "("},
-                        {ATOM, "X"},
-                        {RIGHT_PAREN, ")"},
-                        {ATOM, "Y"},
-                        {ATOM, "Z"},
-                        {RIGHT_PAREN, ")"},
-                        {RIGHT_PAREN, ")"}}; // lexer에서 리턴해 준 token들이라고 가정.
-
-    tokenList = tokens;
-    TreeNode* head = block();
-    preorderPrint(head);
 }
 
+
 /* error - 에러 처리 함수 */
-static TreeNode* error(char* message){
-    if(!isSyntaxError)
-        printf("syntax error - %s\n", message);    
+static TreeNode* error(char* message) {
+    if (!isSyntaxError)
+        printf("syntax error - %s\n", message);
     isSyntaxError = true;
     return NULL;
 }
@@ -130,76 +68,76 @@ static TreeNode* block() {
         return par();  // <PAR>
     }
     getToken();
-    switch(nextToken.code) {
+    switch (nextToken.code) {
         // 함수 유형1 - 매개변수 block이 1개
-        case FUNC_TYPE1:
-            root = new_node(nextToken);
-            root->child1 = block();       // 첫번째 자식에서 block()
-            break;
+    case FUNC_TYPE1:
+        root = new_node(nextToken);
+        root->child1 = block();       // 첫번째 자식에서 block()
+        break;
 
         // 함수 유형2 - 매개변수 block이 2개
-        case FUNC_TYPE2:
-        case ADD_OP: case SUB_OP: case MULT_OP: case DIV_OP:
-        case LESS_COMP: case GREATER_COMP: case EQUAL_COMP:
-            root = new_node(nextToken);
-            root->child1 = block();      // 첫번째 자식에서 block()
-            root->child2 = block();     // 두번재 자식에서 block()
-            break;
+    case FUNC_TYPE2:
+    case ADD_OP: case SUB_OP: case MULT_OP: case DIV_OP:
+    case LESS_COMP: case GREATER_COMP: case EQUAL_COMP:
+        root = new_node(nextToken);
+        root->child1 = block();      // 첫번째 자식에서 block()
+        root->child2 = block();     // 두번재 자식에서 block()
+        break;
 
         // 함수 유형3 - 매개변수 block이 3개
-        case FUNC_TYPE3:
-            root = new_node(nextToken);
-            root->child1 = block();      // 첫번째 자식에서 block()
-            root->child2 = block();     // 두번재 자식에서 block()
-            root->child3 = block();      // 세번째 자식에서 block()
-            break;
+    case FUNC_TYPE3:
+        root = new_node(nextToken);
+        root->child1 = block();      // 첫번째 자식에서 block()
+        root->child2 = block();     // 두번재 자식에서 block()
+        root->child3 = block();      // 세번째 자식에서 block()
+        break;
 
         // 함수 유형4 - COND 함수
-        case FUNC_TYPE4:
-            root = new_node(nextToken);
-            // (<제1조건문> <수행문1>)
+    case FUNC_TYPE4:
+        root = new_node(nextToken);
+        // (<제1조건문> <수행문1>)
+        getToken();
+        if (nextToken.code == LEFT_PAREN) {
+            root->child1 = new_node(nextToken); // 편의상 '(' 담는 노드 추가
+            root->child1->child1 = block();     // <제1조건문>
+            root->child1->child2 = block();     // <수행문1>
+            getToken();
+            if (nextToken.code != RIGHT_PAREN)
+                return error("right paren is missing in block");
+
+            // (<제2조건문> <수행문2>)
+            // 원리는 1과 동일
             getToken();
             if (nextToken.code == LEFT_PAREN) {
-                root->child1 = new_node(nextToken); // 편의상 '(' 담는 노드 추가
-                root->child1->child1 = block();     // <제1조건문>
-                root->child1->child2 = block();     // <수행문1>
+                root->child2 = new_node(nextToken);
+                root->child2->child1 = block();
+                root->child2->child2 = block();
                 getToken();
                 if (nextToken.code != RIGHT_PAREN)
                     return error("right paren is missing in block");
-                
-                // (<제2조건문> <수행문2>)
+
+                // (<제3조건문> <수행문3>)
                 // 원리는 1과 동일
                 getToken();
                 if (nextToken.code == LEFT_PAREN) {
-                    root->child2 = new_node(nextToken);
-                    root->child2->child1 = block();
-                    root->child2->child2 = block();
+                    root->child3 = new_node(nextToken);
+                    root->child3->child1 = block();
+                    root->child3->child2 = block();
                     getToken();
                     if (nextToken.code != RIGHT_PAREN)
                         return error("right paren is missing in block");
-                    
-                    // (<제3조건문> <수행문3>)
-                    // 원리는 1과 동일
-                    getToken();
-                    if (nextToken.code == LEFT_PAREN) {
-                        root->child3 = new_node(nextToken);
-                        root->child3->child1 = block();
-                        root->child3->child2 = block();
-                        getToken();
-                        if (nextToken.code != RIGHT_PAREN)
-                            return error("right paren is missing in block");
-                        break;
-                    }
+                    break;
                 }
             }
-            return error("left paren is missing in block");
-        default:
-            return error("undefined function in block");
+        }
+        return error("left paren is missing in block");
+    default:
+        return error("undefined function in block");
     }
     getToken();
     if (nextToken.code != RIGHT_PAREN)
         return error("right paren is missing in block");
-    
+
     return root;
 }
 
@@ -209,9 +147,9 @@ static TreeNode* block() {
 */
 static TreeNode* par() {
     if (nextToken.code == IDENT || nextToken.code == INT_LIT/*NUM*/ || nextToken.code == STRING
-        || nextToken.code == ATOM || nextToken.code == NIL)
+        || nextToken.code == ATOM || nextToken.code == NIL || nextToken.code == FLOAT_LIT)
         return new_node(nextToken);
-    
+
     if (nextToken.code == APOSTROPHE){
         getToken();
         if (nextToken.code == LEFT_PAREN)
@@ -258,7 +196,7 @@ static TreeNode* list() {
 
 
 /* 일반적인 트리의 노드 생성 함수*/
-TreeNode* new_node(element key){
+TreeNode* new_node(element key) {
     TreeNode* temp = (TreeNode*)malloc(sizeof(TreeNode));
     temp->key = key;
     temp->child1 = temp->child2 = temp->child3 = NULL;
@@ -285,9 +223,10 @@ void destroyTree(TreeNode* root)
 }
 
 /* 트리 출력 함수 (테스트용) */
-void printTree(TreeNode *root){
-    printf("현재 노드 {code: %d lexeme: %s}", root->key.code, root->key.lexeme);
-    if(root->key.code == LIST_CODE){
+void printTree(TreeNode* root) {
+    if (root->key.code != LIST_CODE)
+        printf("현재 노드 {code: %d lexeme: %s}", root->key.code, root->key.lexeme);
+    if (root->key.code == LIST_CODE) {
         printf(" *이 노드는 lexeme 대신 listElem를 갖습니다: ");
         for (int i = 0; root->key.listElem[i] != NULL; i++)
             printf("{%d, %s} ", root->key.listElem[i]->code, root->key.listElem[i]->lexeme);
@@ -300,8 +239,8 @@ void printTree(TreeNode *root){
         printf(" 노드3: {code: %d lexeme: %s}", root->child3->key.code, root->child3->key.lexeme);
     printf("\n");
 }
-void preorderPrint(TreeNode *root){
-    if (root != NULL){
+void preorderPrint(TreeNode* root) {
+    if (root != NULL) {
         printTree(root);
         preorderPrint(root->child1);
         preorderPrint(root->child2);
