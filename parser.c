@@ -82,10 +82,17 @@ TreeNode* parser(element tokens[]) {
     return head;
 }*/
 int main() {
-    element tokens[5] = {{LEFT_PAREN, "("}, 
+    element tokens[12] = {{LEFT_PAREN, "("}, 
                         {FUNC_TYPE2, "SETQ"}, 
                         {IDENT, "X"}, 
-                        {INT_LIT, "3"}, 
+                        {APOSTROPHE, "‘"},
+                        {LEFT_PAREN, "("},
+                        {LEFT_PAREN, "("},
+                        {ATOM, "X"},
+                        {RIGHT_PAREN, ")"},
+                        {ATOM, "Y"},
+                        {ATOM, "Z"},
+                        {RIGHT_PAREN, ")"},
                         {RIGHT_PAREN, ")"}}; // lexer에서 리턴해 준 token들이라고 가정.
 
     tokenList = tokens;
@@ -205,7 +212,13 @@ static TreeNode* par() {
         || nextToken.code == ATOM || nextToken.code == NIL)
         return new_node(nextToken);
     
-    return list();
+    if (nextToken.code == APOSTROPHE){
+        getToken();
+        if (nextToken.code == LEFT_PAREN)
+            return list();
+    }
+    
+    return error("there is a token that parser can't validate!");
 }
 
 
@@ -220,35 +233,23 @@ static TreeNode* list() {
     root->key.code = LIST_CODE;
 
     TreeNode* temp = NULL;
-    int pos = 0;
-    if (nextToken.code == APOSTROPHE){
+    int pos = 0;  // pos: root의 listElem의 index
+    while(1) {
         getToken();
-        if (nextToken.code == LEFT_PAREN) {
-            while(1) {
-                getToken();
-                if (nextToken.code == RIGHT_PAREN)
-                    break;
-                if (nextToken.code == EOF)
-                    return error("no more tokens to parse");
+        if (nextToken.code == RIGHT_PAREN)
+            break;
+        else if (nextToken.code == EOF)
+            return error("no more tokens to parse");
 
-                temp = par();
-                if (temp->key.code != LIST_CODE){   
-                    root->key.listElem[pos] = &temp->key;                    
-                }
-                else {  //리스트의 원소 중에 또 리스트가 있는 경우..
-                    for(int i = 0; temp->key.listElem[i] != NULL; i++)
-                        root->key.listElem[pos]->listElem[i] = temp->key.listElem[i];
-                }
-                pos++;
-            }
-            return root;
-        }
+        else if (nextToken.code == LEFT_PAREN)
+            temp = list();
+        else
+            temp = par();
+        root->key.listElem[pos] = &temp->key;  
+        pos++;
     }
-    return error("there is a token that parser can't validate!");
+    return root;
 }
-// 현재 코드로는 '((x) y z) 처럼 원소가 ( )로 둘러싸여있는건 인식 못함. 수정할 사항..
-// (LIST X 1 2) 에서 X는 IDENT 인데, '(X 1 2) 에서 X는 ATOM 이라고 하네요... <LIST> 의 Rule 바꿔야 할 수도..
-
 
 
 /***********************************/
