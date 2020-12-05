@@ -50,11 +50,7 @@ typedef struct TreeNode {
 // 변수 저장
 typedef struct Variable {
 	char* name;
-	union {
-		int int_value;
-		float real_value;
-		char* char_value;
-	} value;
+	element value;
 	struct Variable* next;
 } Variable;
 
@@ -85,7 +81,14 @@ typedef enum
 
 void run(const struct TreeNode* const, const struct TreeNode* const);
 
-void func_type1();
-void func_type2();
+int find_func_index(char*[], int);
 
+element* func_type1();
+element func_type2();
+
+int var_listElem_length(const struct Variable* const);
+int tree_listElem_length(const struct TreeNode* const);
+Variable* find_varialbe(char*);
+element* make_listElem_cdr(element*, int);
+element* make_listElem_reverse(element*, int);
 #endif
