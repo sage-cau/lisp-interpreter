@@ -3,8 +3,10 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <string.h>
 #include "run.h"
 
+bool isRunningError = false;// running 과정에서 에러가 있는 경우 true. (main.c에 전달할 정보)
 struct TreeNode* head;
 struct Variable* v_head;	// 변수 저장
 
@@ -28,6 +30,14 @@ void run(const struct TreeNode* const h, const struct Variable* const v_h)
 	}
 }
 
+/* error - 에러 처리 함수 */
+static element* error(char* message){
+    if(!isRunningError)
+        printf("syntax error - %s\n", message);    
+    isRunningError = true;
+    return NULL;
+}
+
 element* func_type1()
 {
 	char* keywords[] = { "CAR", "CDR", "CADDR", "REVERSE", "LENGTH", "ATOM", 
@@ -36,7 +46,7 @@ element* func_type1()
 	int func_index = find_func_index(keywords, keywords_len);
 
 	// child1이 변수냐, 아니냐
-	Variable* var = find_varialbe(head->key.lexeme[0]);	// 저장된 변수인지
+	Variable* var = find_variable(head->key.lexeme[0]);	// 저장된 변수인지
 	int child1_code;
 	int child1_num;
 	int listElem_len;
@@ -132,26 +142,153 @@ element* func_type1()
 	return result;
 }
 
-element func_type2()
+element* func_type2()
 {
-	char* keywords[] = { "SETQ", "NTH", "CONS", "MEMBER", "REMOVE", "EQUAL" };
+	char* keywords[] = { "DEFVAR", "SETQ", "NTH", "CONS", "MEMBER", "REMOVE", "EQUAL"};
 	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords 배열 길이
-	int func_index = find_func_index(keywords, keywords_len);
+	int func_index = -1;
 
+	for (int i = 0; i < keywords_len; i++) {
+		if (head->key.lexeme == keywords[i]) {
+			func_index = i;
+			break;
+		}
+	}
+
+	
 	switch (func_index + 200)
 	{
+	case DEFVAR:
+		if(head->child1->key.code != IDENT)
+			return error("1st argument should be IDENT");
+		
+		Variable *p = find_variable(head->child1->key.lexeme);
+		if (p == NULL) {
+			// 새로운 Variable 추가
+			Variable* temp = (Variable*)malloc(sizeof(Variable));
+			strcpy(temp->name, head->child1->key.lexeme);
+			temp->value = head->child2->key;
+			temp->next = head;
+			head = temp;
+		}
+		else
+			p->value = head->child2->key;	// 바인딩
+		return &head->child1->key;
+		break;
+	
 	case SETQ:
+		if(head->child1->key.code != IDENT)
+			return error("1st argument should be IDENT");
+		
+		Variable *p = find_variable(head->child1->key.lexeme);
+		if (p == NULL)
+			return error("undefined variable");
+		p->value = head->child2->key;	// 바인딩
+		return &head->child1->key;
 		break;
+	
 	case NTH:
+		if(head->child1->key.code != INT_LIT)
+			return error("1st argument should be INT");
+		
+		if(head->child2->key.code != LIST_CODE)
+			return error("2nd argument should be LIST");
+		
+		int index = atoi(head->child1->key.lexeme);
+		if (head->child2->key.listElem[index] != NULL)
+			return head->child2->key.listElem[index];
+		else {	// 리스트 크기를 벗어나는 위치를 참조한 경우
+			element temp = {NIL, "NIL"};
+			return &temp;
+		}
 		break;
+
 	case CONS:
+		switch(head->child1->key.code){
+			case INT_LIT: case ATOM: case STRING: case NIL: /*case T: */
+				break;
+			default:
+				return error("1st argument has wrong type");
+				break;
+		}
+		if(head->child2->key.code != LIST_CODE)
+			return error("2nd argument should be LIST");
+
+		element* result = malloc(sizeof(struct element));
+		result->code = LIST_CODE;
+		result->listElem[0] = &head->child1->key;
+		for (int i = 0; head->child2->key.listElem[i] != NULL; i++)
+			result->listElem[i+1] = head->child2->key.listElem[i];
+		return result;
 		break;
+
 	case MEMBER:
+		switch(head->child1->key.code){
+			case INT_LIT: case ATOM: case STRING: case NIL: /*case T: */
+				break;
+			default:
+				return error("1st argument has wrong type");
+				break;
+		}
+		if(head->child2->key.code != LIST_CODE)
+			return error("2nd argument should be LIST");
+
+		int foundIndex = -1;
+		element* result = malloc(sizeof(struct element));
+		result->code = LIST_CODE;
+
+		for (int i = 0; head->child2->key.listElem[i] != NULL; i++){
+			if(!strcmp(head->child1->key.lexeme, head->child2->key.listElem[i]->lexeme)){
+				foundIndex = i;
+				break;
+			}
+		}
+		if (foundIndex != -1){
+			for (int i = 0; head->child2->key.listElem[i+foundIndex] != NULL; i++)
+					result->listElem[i] = head->child2->key.listElem[i+foundIndex];
+			return result;
+		}
+		else {
+			element temp = {NIL, "NIL"};
+			return &temp;
+		}
 		break;
+
 	case REMOVE:
+		switch(head->child1->key.code){
+			case INT_LIT: case ATOM: case STRING: case NIL: /*case T: */
+				break;
+			default:
+				return error("1st argument has wrong type");
+				break;
+		}
+		if(head->child2->key.code != LIST_CODE)
+			return error("2nd argument should be LIST");
+
+		int count = 0;
+		element* result = malloc(sizeof(struct element));
+		result->code = LIST_CODE;
+
+		for (int i = 0; head->child2->key.listElem[i] != NULL; i++){
+			if(!strcmp(head->child1->key.lexeme, head->child2->key.listElem[i]->lexeme)){
+				count++;
+				continue;
+			}
+			result->listElem[i-count] = head->child2->key.listElem[i];
+		}
+		return result;
 		break;
+
 	case EQUAL:
+		element* result = malloc(sizeof(struct element));
+		//result->code = BOOLEAN;
+		if(isEqual(&head->child1->key, &head->child2->key))
+			strcpy(result->lexeme, "T");
+		else	
+			strcpy(result->lexeme, "NIL");
+		return result;
 		break;
+	
 	default:
 		/* 사칙연산, 비교연산... */
 		break;
@@ -204,7 +341,7 @@ int tree_listElem_length(const struct TreeNode* const child)
 }
 
 // 원하는 변수 찾기
-Variable* find_varialbe(char* var)
+Variable* find_variable(char* var)
 {
 	if (v_head == NULL)
 		return NULL;
@@ -243,4 +380,19 @@ element* make_listElem_reverse(element* result, int len)
 	}
 
 	return result;
+}
+
+
+bool isEqual(element* arg1, element* arg2) {
+	if(arg1->code == LIST_CODE) {
+		for (int i = 0; arg1->listElem[i] != NULL; i++){
+			if(!isEqual(arg1->listElem[i], arg2->listElem[i]))
+				return false;
+		}
+		return true;
+	}
+	else {
+		if (!strcmp(arg1->lexeme, arg2->lexeme))
+			return true;
+	}
 }

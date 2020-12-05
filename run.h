@@ -79,10 +79,10 @@ typedef enum
 	EQUAL,
 } Keyword2;	// func_type2에 속하는 함수
 
-void run(const struct TreeNode* const, const struct TreeNode* const);
+void run(const struct TreeNode* const, const struct Variable* const);
 
 element* func_type1();
-element func_type2();
+element* func_type2();
 
 int find_func_index(char* [], int);
 int var_listElem_length(const struct Variable* const);
