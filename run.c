@@ -16,7 +16,7 @@ void run(const struct TreeNode* const h, const struct Variable* const v_h)
 	switch(head->key.code)
 	{
 		case FUNC_TYPE1:
-			func_type1();
+			print_l(func_type1());
 			break;
 		case FUNC_TYPE2:
 			func_type2();
@@ -30,7 +30,7 @@ void run(const struct TreeNode* const h, const struct Variable* const v_h)
 
 element* func_type1()
 {
-	char* keywords[] = { "CAR", "CDR", "CADDR", "REVERSE", "LENGTH", "ATOM", 
+	char* keywords[] = { "CAR", "CDR", "CADDR", "REVERSE", "LENGTH", "ATOM",
 						"NULL", "NUMBERP", "ZEROP", "MINUSP", "STRINGP" };
 	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords 배열 길이
 	int func_index = find_func_index(keywords, keywords_len);
@@ -61,23 +61,23 @@ element* func_type1()
 	element* result = malloc(sizeof(struct element));
 	bool isPredicateFunc = false;	// Predicate 함수인지
 	bool isTrue = false;	// Predicate 함수에서 값이 true인지
-	
+
 	switch (func_index + 100)
 	{
 	case CAR:	// 리스트의 첫번째 원소 가져옴
-		result->code = LIST_CODE;	// ??????????
-		strcpy(result->lexeme, head->child1->key.listElem[0]->lexeme);	// 첫번째 원소
+		result->code = child1_code;
+		strcpy(result->lexeme, head->child1->key.listElem[0]->lexeme);
 		break;
 	case CDR:	// 리스트의 첫번째 원소를 제외한 나머지를 결과로 생성
-		result->code = LIST_CODE;	// ??????????
+		result->code = child1_code;
 		result = make_listElem_cdr(result, listElem_len);
 		break;
 	case CADDR:	// 리스트의 세번째 원소를 구함
-		result->code = LIST_CODE;	// ??????????
-		strcpy(result->lexeme, head->child1->key.listElem[2]->lexeme);	// 세번째 원소
+		result->code = child1_code;
+		strcpy(result->lexeme, head->child1->key.listElem[2]->lexeme);
 		break;
 	case REVERSE:	// 주어진 리스트 안의 원소의 순서를 거꾸로 바꿈
-		result->code = LIST_CODE;	// ??????????
+		result->code = child1_code;
 		result = make_listElem_reverse(result, listElem_len);
 		break;
 	case LENGTH:	// 주어진 리스트 내의 원소 개수를 값으로 반환
@@ -123,11 +123,6 @@ element* func_type1()
 		//result->code = BOOLEAN;	// BOOLEAN 코드 추가해야 함
 		isTrue ? strcpy(result->lexeme, "T") : strcpy(result->lexeme, "NIL");
 	}
-	
-	/* 테스트용 */
-	//printf("%s\n", result->lexeme);
-	//for (int i = 0; i < listElem_len - 1; i++)
-	//	printf("%s\n", result->listElem[i]->lexeme);
 
 	return result;
 }
@@ -243,4 +238,32 @@ element* make_listElem_reverse(element* result, int len)
 	}
 
 	return result;
+}
+
+// 결과 출력하기
+void print_l(element* result)
+{
+	// 리스트가 아닌 경우
+	if (result->code != LIST_CODE)
+		printf("%s ", result->lexeme);
+	// 리스트인 경우
+	else
+	{
+		int list_len = tree_listElem_length(result);
+
+		if (list_len == 1)	// 원소의 개수가 1개인 리스트
+			printf("%s ", result->lexeme);
+		else
+		{
+			printf("(");
+
+			int i = 0;
+			for (i = 0; i < list_len - 1; i++)
+				printf("%s ", result->listElem[i]->lexeme);
+
+			printf("%s)", result->listElem[i]->lexeme);
+		}
+	}
+
+	printf("\n");
 }

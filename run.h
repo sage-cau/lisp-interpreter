@@ -90,4 +90,7 @@ int tree_listElem_length(const struct TreeNode* const);
 Variable* find_varialbe(char*);
 element* make_listElem_cdr(element*, int);
 element* make_listElem_reverse(element*, int);
+
+void print_l(element*);
+
 #endif
