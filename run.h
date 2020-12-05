@@ -81,11 +81,10 @@ typedef enum
 
 void run(const struct TreeNode* const, const struct TreeNode* const);
 
-int find_func_index(char*[], int);
-
 element* func_type1();
 element func_type2();
 
+int find_func_index(char* [], int);
 int var_listElem_length(const struct Variable* const);
 int tree_listElem_length(const struct TreeNode* const);
 Variable* find_varialbe(char*);

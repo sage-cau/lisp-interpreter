@@ -28,21 +28,6 @@ void run(const struct TreeNode* const h, const struct Variable* const v_h)
 	}
 }
 
-// 어떤 함수인지 찾기
-int find_func_index(char* keywords[], int len)
-{
-    int func_index = -1;
-
-	for (int i = 0; i < len; i++) {
-		if (!strcmp(head->key.lexeme, keywords[i])) {
-			func_index = i;
-			break;
-		}
-	}
-
-	return func_index;
-}
-
 element* func_type1()
 {
 	char* keywords[] = { "CAR", "CDR", "CADDR", "REVERSE", "LENGTH", "ATOM", 
@@ -141,10 +126,51 @@ element* func_type1()
 	
 	/* 테스트용 */
 	//printf("%s\n", result->lexeme);
-	/*for (int i = 0; i < listElem_len - 1; i++)
-		printf("%s\n", result->listElem[i]->lexeme);*/
+	//for (int i = 0; i < listElem_len - 1; i++)
+	//	printf("%s\n", result->listElem[i]->lexeme);
 
 	return result;
+}
+
+element func_type2()
+{
+	char* keywords[] = { "SETQ", "NTH", "CONS", "MEMBER", "REMOVE", "EQUAL" };
+	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords 배열 길이
+	int func_index = find_func_index(keywords, keywords_len);
+
+	switch (func_index + 200)
+	{
+	case SETQ:
+		break;
+	case NTH:
+		break;
+	case CONS:
+		break;
+	case MEMBER:
+		break;
+	case REMOVE:
+		break;
+	case EQUAL:
+		break;
+	default:
+		/* 사칙연산, 비교연산... */
+		break;
+	}
+}
+
+// 어떤 함수인지 찾기
+int find_func_index(char* keywords[], int len)
+{
+	int func_index = -1;
+
+	for (int i = 0; i < len; i++) {
+		if (!strcmp(head->key.lexeme, keywords[i])) {
+			func_index = i;
+			break;
+		}
+	}
+
+	return func_index;
 }
 
 // 리스트 개수 구하기
@@ -217,30 +243,4 @@ element* make_listElem_reverse(element* result, int len)
 	}
 
 	return result;
-}
-
-element func_type2()
-{
-	char* keywords[] = { "SETQ", "NTH", "CONS", "MEMBER", "REMOVE", "EQUAL"};
-	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords 배열 길이
-	int func_index = find_func_index(keywords, keywords_len);
-
-	switch (func_index + 200)
-	{
-	case SETQ:
-		break;
-	case NTH:
-		break;
-	case CONS:
-		break;
-	case MEMBER:
-		break;
-	case REMOVE:
-		break;
-	case EQUAL:
-		break;
-	default:
-		/* 사칙연산, 비교연산... */
-		break;
-	}
 }
