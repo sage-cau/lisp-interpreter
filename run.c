@@ -68,48 +68,48 @@ element* func_type1()
 		result->code = LIST_CODE;	// ??????????
 		strcpy(result->lexeme, head->child1->key.listElem[0]->lexeme);	// 첫번째 원소
 		break;
-	case CDR:
+	case CDR:	// 리스트의 첫번째 원소를 제외한 나머지를 결과로 생성
 		result->code = LIST_CODE;	// ??????????
 		result = make_listElem_cdr(result, listElem_len);
 		break;
-	case CADDR:
+	case CADDR:	// 리스트의 세번째 원소를 구함
 		result->code = LIST_CODE;	// ??????????
 		strcpy(result->lexeme, head->child1->key.listElem[2]->lexeme);	// 세번째 원소
 		break;
-	case REVERSE:
+	case REVERSE:	// 주어진 리스트 안의 원소의 순서를 거꾸로 바꿈
 		result->code = LIST_CODE;	// ??????????
 		result = make_listElem_reverse(result, listElem_len);
 		break;
-	case LENGTH:
+	case LENGTH:	// 주어진 리스트 내의 원소 개수를 값으로 반환
 		result->code = INT_LIT;
 		sprintf(result->lexeme, "%d", listElem_len);
 		break;
-	case _ATOM:
+	case _ATOM:	// ATOM(심볼)일 때만 참(true)를 반환
 		isPredicateFunc = true;
 		if (child1_code == ATOM)
 			isTrue = true;
 		break;
-	case _NULL:
+	case _NULL:	// NIL일 때만 참(true)을 반환
 		isPredicateFunc = true;
 		if (child1_code == NIL)
 			isTrue = true;
 		break;
-	case NUMBERP:
+	case NUMBERP:	// 숫자일 때만 참(true)을 반환
 		isPredicateFunc = true;
 		if (child1_code == INT_LIT)
 			isTrue = true;
 		break;
-	case ZEROP:
+	case ZEROP:	// 0일 때만 참(true)을 반환
 		isPredicateFunc = true;
 		if (child1_num == 0)
 			isTrue = true;
 		break;
-	case MINUSP:
+	case MINUSP:	// 음수일 때만 참(true)을 반환
 		isPredicateFunc = true;
 		if (child1_num < 0)
 			isTrue = true;
 		break;
-	case STRINGP:
+	case STRINGP:	// STRING일 때만 참(true)을 반환
 		isPredicateFunc = true;
 		if (child1_code == STRING)
 			isTrue = true;
@@ -239,7 +239,7 @@ element* make_listElem_reverse(element* result, int len)
 	for (int i = 0; i < len; i++) {
 		result->listElem[i] = malloc(sizeof(struct element));
 		result->listElem[i]->code = head->child1->key.listElem[len - 1 - i]->code;
-		strcpy(result->listElem[i]->lexeme, head->child1->key.listElem[len - 1 - i]->lexeme);	// 첫번째 원소 제외한 나머지
+		strcpy(result->listElem[i]->lexeme, head->child1->key.listElem[len - 1 - i]->lexeme);	// 역순으로
 	}
 
 	return result;
