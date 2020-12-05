@@ -77,13 +77,49 @@ static TreeNode* block() {
 
         // 함수 유형2 - 매개변수 block이 2개
     case FUNC_TYPE2:
-    case ADD_OP: case SUB_OP: case MULT_OP: case DIV_OP:
-    case LESS_COMP: case GREATER_COMP: case EQUAL_COMP:
+    case EQUAL_COMP:
         root = new_node(nextToken);
         root->child1 = block();      // 첫번째 자식에서 block()
         root->child2 = block();     // 두번재 자식에서 block()
         break;
 
+    case LESS_COMP:
+        getToken();
+        if (nextToken.code == EQUAL_COMP) { //<= 인 경우
+            nextToken.code = LESS_EQUAL_COMP;
+            strcpy(nextToken.lexeme, "<=");
+        }
+        root = new_node(nextToken);
+        root->child1 = block();      // 첫번째 자식에서 block()
+        root->child2 = block();     // 두번재 자식에서 block()
+        break;
+
+    case GREATER_COMP:
+        getToken();
+        if (nextToken.code == EQUAL_COMP) { //>= 인 경우
+            nextToken.code = GREATER_EQUAL_COMP;
+            strcpy(nextToken.lexeme, ">=");
+        }
+        root = new_node(nextToken);
+        root->child1 = block();      // 첫번째 자식에서 block()
+        root->child2 = block();     // 두번재 자식에서 block()
+        break;
+
+    case ADD_OP: case SUB_OP: case MULT_OP: case DIV_OP:
+        root = new_node(nextToken);
+        TreeNode* temp = root;
+        while(1) {
+            getToken();
+            if (nextToken.code == INT_LIT || nextToken.code == FLOAT_LIT) {
+                temp->child1 = new_node(nextToken);
+                temp = temp->child1;
+            }
+            else if (nextToken.code == RIGHT_PAREN)
+                break;
+            else
+                return error("wrong operand");
+        }
+        break;
         // 함수 유형3 - 매개변수 block이 3개
     case FUNC_TYPE3:
         root = new_node(nextToken);

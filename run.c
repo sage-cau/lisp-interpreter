@@ -23,19 +23,18 @@ void run(const struct TreeNode* const h, const struct Variable* const v_h)
 		case FUNC_TYPE2:
 			func_type2();
 			break;
+		case LESS_COMP: case GREATER_COMP: case EQUAL_COMP: 
+		case LESS_EQUAL_COMP: case GREATER_EQUAL_COMP:
+			comparison();
+			break;
+		case ADD_OP: case SUB_OP: case MULT_OP: case DIV_OP:
+			numeric_operation();
+			break;
 		case FUNC_TYPE3:
 			break;
 		case FUNC_TYPE4:
 			break;
 	}
-}
-
-/* error - 에러 처리 함수 */
-static element* error(char* message){
-    if(!isRunningError)
-        printf("syntax error - %s\n", message);    
-    isRunningError = true;
-    return NULL;
 }
 
 element* func_type1()
@@ -276,18 +275,78 @@ element* func_type2()
 
 	case EQUAL:
 		element* result = malloc(sizeof(struct element));
-		//result->code = BOOLEAN;
-		if(isEqual(&head->child1->key, &head->child2->key))
-			strcpy(result->lexeme, "T");
-		else	
-			strcpy(result->lexeme, "NIL");
+		bool isTrue = isEqual(&head->child1->key, &head->child2->key);
+		result->code = isTrue? T : NIL;
+		strcpy(result->lexeme, "T") : strcpy(result->lexeme, "NIL");
 		return result;
 		break;
 	
 	default:
-		/* 사칙연산, 비교연산... */
 		break;
 	}
+}
+
+element* comparison() {
+	if(head->child1->key.code == INT_LIT || head->child1->key.code == FLOAT_LIT) {
+		return error("wrong comparison operand type");
+	}
+
+	double num1 = atof(head->child1->key.lexeme);
+	double num2 = atof(head->child2->key.lexeme);
+	bool isTrue = false;
+	element* result = malloc(sizeof(struct element));
+
+	switch(head->key.code) {
+		case LESS_COMP:
+			isTrue = (num1 < num2);
+			break;
+		case GREATER_COMP:
+			isTrue = (num1 > num2);
+			break;
+		case EQUAL_COMP:
+			isTrue = (num1 == num2);
+			break;
+		case LESS_EQUAL_COMP:
+			isTrue = (num1 <= num2);
+			break;
+		case GREATER_EQUAL_COMP:
+			isTrue = (num1 >= num2);
+			break;
+	}
+	result->code = isTrue? T : NIL;
+	isTrue? strcpy(result->lexeme, "T") : strcpy(result->lexeme, "NIL");
+	return result;
+}
+
+element* numeric_operation() {
+	element* result = malloc(sizeof(struct element));
+	double answer = 0;
+	bool isFloat = false;
+
+	TreeNode* temp = head->child1;
+	while (temp != NULL) {
+		if(temp->key.code == FLOAT_LIT)
+			isFloat = true;
+		switch(head->key.code) {
+			case ADD_OP:
+				answer += atof(temp->key.lexeme);
+				break;
+			case SUB_OP:
+				answer -= atof(temp->key.lexeme);
+				break;
+			case MULT_OP:
+				answer *= atof(temp->key.lexeme);
+				break;
+			case DIV_OP:
+				answer /= atof(temp->key.lexeme);
+				break;
+		}
+		temp = temp->child1;
+	}
+	result->code = isFloat? FLOAT_LIT : INT_LIT;
+	sprintf(result->lexeme, isFloat? "%.2f": "%.f", answer); // 수를 문자열로 변환
+	// 실수가 포함되었던 연산은 소수점 둘째자리까지, 정수만 포함되었던 연산은 소수점 없이 출력
+	return result;
 }
 
 // 어떤 함수인지 찾기
@@ -418,4 +477,12 @@ void print_l(element* result)
 	}
 
 	printf("\n");
+}
+
+/* error - 에러 처리 함수 */
+static element* error(char* message){
+    if(!isRunningError)
+        printf("running error - %s\n", message);    
+    isRunningError = true;
+    return NULL;
 }
