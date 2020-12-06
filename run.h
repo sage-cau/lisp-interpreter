@@ -22,7 +22,7 @@ typedef enum
 	MINUSP,
 	STRINGP,
 	PRINT,
-} Keyword1;	// func_type1¿¡ ¼ÓÇÏ´Â ÇÔ¼ö
+} Keyword1;	// func_type1ì— ì†í•˜ëŠ” í•¨ìˆ˜
 
 typedef enum
 {
@@ -33,29 +33,29 @@ typedef enum
 	MEMBER,
 	REMOVE,
 	EQUAL,
-} Keyword2;	// func_type2¿¡ ¼ÓÇÏ´Â ÇÔ¼ö
+} Keyword2;	// func_type2ì— ì†í•˜ëŠ” í•¨ìˆ˜
 
 typedef enum
 {
 	COND = KEYWORD3,
 	SUBST,
 	IF,
-} Keyword3;	// fund_type3¿¡ ¼ÓÇÏ´Â ÇÔ¼ö
+} Keyword3;	// fund_type3ì— ì†í•˜ëŠ” í•¨ìˆ˜
 
 typedef enum
 {
 	LIST = KEYWORD4,
 	APPEND,
-} Keyword4;	// func_type4¿¡ ¼ÓÇÏ´Â ÇÔ¼ö
+} Keyword4;	// func_type4ì— ì†í•˜ëŠ” í•¨ìˆ˜
 
 void run(const struct TreeNode* const, const struct Variable** const);
 
-element* func_type1(const struct TreeNode* const);	// ¸Å°³º¯¼ö°¡ 1°³ÀÎ ÇÔ¼ö
-element* func_type2(const struct TreeNode* const);	// ¸Å°³º¯¼ö°¡ 2°³ÀÎ ÇÔ¼ö
-element* comparison(const struct TreeNode* const);	// ºñ±³¿¬»ê(>, <, ...)
-element* numeric_operation(const struct TreeNode* const);	// »çÄ¢¿¬»ê
-element* func_type3(const struct TreeNode* const);	// ¸Å°³º¯¼ö°¡ 3°³ÀÎ ÇÔ¼ö
-element* func_type4(const struct TreeNode* const);	// ¸Å°³º¯¼öÀÇ °³¼ö°¡ À¯µ¿ÀûÀÎ ÇÔ¼ö
+element* func_type1(const struct TreeNode* const);	// ë§¤ê°œë³€ìˆ˜ê°€ 1ê°œì¸ í•¨ìˆ˜
+element* func_type2(const struct TreeNode* const);	// ë§¤ê°œë³€ìˆ˜ê°€ 2ê°œì¸ í•¨ìˆ˜
+element* comparison(const struct TreeNode* const);	// ë¹„êµì—°ì‚°(>, <, ...)
+element* numeric_operation(const struct TreeNode* const);	// ì‚¬ì¹™ì—°ì‚°
+element* func_type3(const struct TreeNode* const);	// ë§¤ê°œë³€ìˆ˜ê°€ 3ê°œì¸ í•¨ìˆ˜
+element* func_type4(const struct TreeNode* const);	// ë§¤ê°œë³€ìˆ˜ì˜ ê°œìˆ˜ê°€ ìœ ë™ì ì¸ í•¨ìˆ˜
 
 int find_func_index(const struct TreeNode* const, char* [], int);
 int var_listElem_length(const struct Variable* const);

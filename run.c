@@ -72,7 +72,8 @@ element *func_type1(const struct TreeNode *const head)
 		child1_code = var->value.code;
 		if (child1_code == INT_LIT)
 			child1_num = atoi(var->value.lexeme);
-		listElem_len = var_listElem_length(var);
+		for (listElem_len = 0; var->value.listElem[listElem_len] != NULL; listElem_len++)
+			;
 	}
 	// 변수가 아니면
 	else
@@ -80,18 +81,31 @@ element *func_type1(const struct TreeNode *const head)
 		child1_code = head->child1->key.code;
 		if (child1_code == INT_LIT)
 			child1_num = atoi(head->child1->key.lexeme);
-		listElem_len = tree_listElem_length(head->child1);
+		for (listElem_len = 0; head->child1->key.listElem[listElem_len] != NULL; listElem_len++)
+			;
 	}
 
 	element *result = malloc(sizeof(struct element));
+	TreeNode *temp = head->child1;
 	bool isPredicateFunc = false; // Predicate 함수인지
 	bool isTrue = false;					// Predicate 함수에서 값이 true인지
+	int car_index = 0;
 
 	switch (func_index + KEYWORD1)
 	{
 	case CAR: // 리스트의 첫번째 원소 가져옴
 		result->code = child1_code;
-		strcpy(result->lexeme, head->child1->key.listElem[0]->lexeme);
+
+		while (!strcmp(temp->key.lexeme, "CDR"))
+		{
+			car_index++;
+			temp = temp->child1;
+		}
+
+		if (car_index)
+			strcpy(result->lexeme, temp->key.listElem[car_index]->lexeme);
+		else
+			strcpy(result->lexeme, head->child1->key.listElem[0]->lexeme);
 		break;
 	case CDR: // 리스트의 첫번째 원소를 제외한 나머지를 결과로 생성
 		result->code = child1_code;
@@ -692,7 +706,10 @@ void print_l(element *result)
 	// 리스트인 경우
 	else
 	{
-		int list_len = tree_listElem_length(result);
+		int list_len;
+		for (list_len = 0; result->listElem[list_len] != NULL; list_len++)
+			;
+
 		if (list_len == 1) // 원소의 개수가 1개인 리스트
 			printf("%s ", result->lexeme);
 		else

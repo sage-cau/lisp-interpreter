@@ -16,7 +16,7 @@ int lex();
 void ident_change();
 void string_check();
 void float_check();
-
+void string_check2();
 /* Global Variable */
 
 
@@ -41,7 +41,7 @@ FILE* in_fp;
 int lexer()
 {
     /* Open the input data file and process its contents */
-    
+
     num = 0;
     in_fp = fopen("out.txt", "r"); // 파일 열어서 읽기
     getChar();
@@ -51,6 +51,7 @@ int lexer()
     } while (nextToken != EOF);
 
     string_check(); // string 체크 띄어쓰기 되어 있는 IDENT-> STRING으로 묶기
+    string_check2();
     float_check();  // 4.5 -> float로 분류
     ident_change(); // IDENT -> ATOM/STRING/IDENT 분류 이중리스트도 처리
     fclose(in_fp);
@@ -272,15 +273,15 @@ int lex() {
     } /* End of switch */
 
     // printf("Next token is: %d, Next lexeme is %s\n", nextToken, lexeme);
-    // printf("num : %d\n", num);
-    if (nextToken != -1) { // EOF 값은 제외했습니다.
-        tokens[num].code = nextToken;
-        strcpy(tokens[num].lexeme, lexeme);
-        num++;
-    }
-    //tokens 구조체에 lexer 값(숫자, 문자 대입)
+// printf("num : %d\n", num);
+if (nextToken != -1) { // EOF 값은 제외했습니다.
+    tokens[num].code = nextToken;
+    strcpy(tokens[num].lexeme, lexeme);
+    num++;
+}
+//tokens 구조체에 lexer 값(숫자, 문자 대입)
 
-    return nextToken;
+return nextToken;
 } /* End of function lex */
 
 
@@ -294,7 +295,7 @@ void string_check()
 
         sub_ele_num = ele_num;
         if (tokens[sub_ele_num].code == DOUBLE_QUOT) {
-            
+
             start = ++sub_ele_num;
             end = start;
 
@@ -305,7 +306,7 @@ void string_check()
             }
             num_string = end - start;
 
-            for (int i = start+1; i < num; i++) {
+            for (int i = start + 1; i < num; i++) {
                 tokens[i].code = tokens[i + num_string].code;
                 strcpy(tokens[i].lexeme, tokens[i + num_string].lexeme);
             }
@@ -327,7 +328,7 @@ void ident_change()
         sub_ele_num = ele_num;
 
         if (tokens[sub_ele_num].code == DOUBLE_QUOT) {
-            if(tokens[++sub_ele_num].code == IDENT)
+            if (tokens[++sub_ele_num].code == IDENT)
                 tokens[sub_ele_num].code = STRING;
         }
         else if (tokens[sub_ele_num].code == APOSTROPHE) {
@@ -347,12 +348,54 @@ void ident_change()
 
             else if (tokens[sub_ele_num].code == IDENT)
                 tokens[sub_ele_num].code = ATOM;
-        
+
         }
     }
     return;
 }
 
+
+void string_check2() {
+    int ele_num, sub_ele_num;
+
+    for (ele_num = 0; ele_num < num; ele_num++) {
+
+        sub_ele_num = ele_num;
+        
+        if (tokens[sub_ele_num].code == DOUBLE_QUOT) {
+            strcat(tokens[sub_ele_num].lexeme, tokens[sub_ele_num + 1].lexeme);
+            strcat(tokens[sub_ele_num].lexeme, tokens[sub_ele_num + 2].lexeme);
+            tokens[sub_ele_num].code = STRING;
+
+            for (int i = sub_ele_num + 1; i < num; i++) {
+                tokens[i].code = tokens[i + 2].code;
+                strcpy(tokens[i].lexeme, tokens[i + 2].lexeme);
+            }
+            num -= 2;
+        }
+
+        if (tokens[sub_ele_num].code == FUNC_TYPE1){
+            if (tokens[sub_ele_num + 1].code == SUB_OP) {
+                if (tokens[sub_ele_num + 2].code == INT_LIT) {
+                    strcat(tokens[sub_ele_num+1].lexeme, tokens[sub_ele_num + 2].lexeme);
+                    tokens[sub_ele_num + 1].code = INT_LIT;
+                }
+                else if (tokens[sub_ele_num + 2].code == FLOAT_LIT) {
+                    strcat(tokens[sub_ele_num + 1].lexeme, tokens[sub_ele_num + 2].lexeme);
+                    tokens[sub_ele_num + 1].code = FLOAT_LIT;
+                }
+                if(num > sub_ele_num+2){
+                    for (int i = sub_ele_num + 2; i < num; i++) {
+                        tokens[i].code = tokens[i + 1].code;
+                        strcpy(tokens[i].lexeme, tokens[i + 1].lexeme);
+                    }
+                }
+                num -= 1;
+            }
+        }
+    }
+    return;
+}
 
 /* " (/+/4/./5/5/./5/) " -> " (/+/4.5/5.5/) " 다음으로 변환 */
 void float_check()
@@ -370,7 +413,7 @@ void float_check()
                     strcat(tokens[start].lexeme, tokens[start + 1].lexeme);
                     strcat(tokens[start].lexeme, tokens[start + 2].lexeme);
                     tokens[start].code = FLOAT_LIT;
-                    
+
                     for (int i = start + 1; i < num; i++) {
                         tokens[i].code = tokens[i + 2].code;
                         strcpy(tokens[i].lexeme, tokens[i + 2].lexeme);

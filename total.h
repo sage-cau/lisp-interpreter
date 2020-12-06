@@ -1,9 +1,3 @@
-
-/*lexer / parser / main 공통 헤더 파일입니다. 
-공통으로 사용하는 함수나 자료구조 전역변수등이 많아서 하나의 헤더 파일로 정리했습니다*/
-
-/* 정의한 자료구조 */
-
 typedef struct element {
     int code;
     union {
@@ -19,9 +13,9 @@ typedef struct TreeNode {
 
 // 변수 저장
 typedef struct Variable {
-	char name[100];
-	element value;
-	struct Variable* next;
+    char name[100];
+    element value;
+    struct Variable* next;
 } Variable;
 
 
@@ -93,7 +87,7 @@ int lex();
 void ident_change();
 void string_check();
 void float_check();
-
+void string_check2();
 /* parser 함수들 */
 
 TreeNode* new_node(element key);

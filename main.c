@@ -5,30 +5,31 @@
 
 #include "total.h"
 
-FILE* in_fp;
+FILE *in_fp;
 
 /*UI 함수*/
 int lexer_interface();
 
-
-/* main 함수 
-- UI 제공 
+/* main 함수
+- UI 제공
 - 입력값 lexer로 넘겨줌(넘길때는 파일로 넘겨주고 lexer로 분석된 출력값 전역변수로 저장)
 - parser 작업(전역변수로 저장된 lexer 분석값으로 사용 포인터로 parser tree 받음)
 (추가로 해야될 작업은 parser.c로 작업된 parser tree를 run.c로 넘겨주고 리턴값을 받아서 출력 정도??) */
 
-void main()
+int main()
 {
     /* Open the input data file and process its contents */
     TreeNode *head1;
     Variable *variable_head = NULL;
     char input[1000];
     lexer_interface();
-    while (1) {
+    while (1)
+    {
         printf(">> ");
-        
+
         fgets(input, sizeof(input), stdin); // 입력 받기
-        if (!strcmp(input, "EXIT\n") || !strcmp(input, "exit\n")) { // EXIT면 종료
+        if (!strcmp(input, "EXIT\n") || !strcmp(input, "exit\n"))
+        { // EXIT면 종료
             printf("종료...\n");
             return 0;
         }
@@ -42,27 +43,27 @@ void main()
         lexer(); // lexer 분석
 
         /* lexer 확인 호출(전역변수 지정) */
-    //    for (int i = 0; i < num; i++) {
-    //         printf("Next token: %d, Next lexeme: %s\n", tokens[i].code, tokens[i].lexeme);
-    //     }
+        //    for (int i = 0; i < num; i++) {
+        //         printf("Next token: %d, Next lexeme: %s\n", tokens[i].code, tokens[i].lexeme);
+        //     }
 
         head1 = parser(); // parser 분석
 
-        if(isSyntaxError)
-            continue;  // 에러가 발생했으면 뒤의 run 건너뜀
-        
+        if (isSyntaxError)
+            continue; // 에러가 발생했으면 뒤의 run 건너뜀
+
         /* parser 확인 함수 호출(포인터 지정) */
         // preorderPrint(head1);
         
         run(head1, &variable_head);
     }
 
-    return;
+    return 0;
 }
 
-
 /*시작때 메인화면 출력 함수*/
-int lexer_interface() {
+int lexer_interface()
+{
     printf("/***************************************************/\n");
     printf("/                                                   /\n");
     printf("/              LISP INTERPRETER !!!!!!              /\n");
@@ -75,4 +76,3 @@ int lexer_interface() {
     printf("\n");
     printf("명령어를 입력하시오...(종료시 EXIT 입력)\n");
 }
-
