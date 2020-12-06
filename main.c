@@ -57,7 +57,7 @@ int main()
 
         variable_head = run(head1, variable_head);
 
-        printf("%s", variable_head->name); // Segmentation fault
+        //printf("%s", variable_head->name); // Segmentation fault
     }
 
     return 0;
