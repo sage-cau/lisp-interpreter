@@ -374,7 +374,7 @@ void string_check2() {
             num -= 2;
         }
 
-        if (strcmp(tokens[sub_ele_num].lexeme, "MINUSP") == 0){
+        if (tokens[sub_ele_num].code == FUNC_TYPE1){
             if (tokens[sub_ele_num + 1].code == SUB_OP) {
                 if (tokens[sub_ele_num + 2].code == INT_LIT) {
                     strcat(tokens[sub_ele_num+1].lexeme, tokens[sub_ele_num + 2].lexeme);
