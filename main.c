@@ -54,10 +54,8 @@ int main()
 
         /* parser 확인 함수 호출(포인터 지정) */
         // preorderPrint(head1);
-
-        variable_head = run(head1, variable_head);
-
-        //printf("%s", variable_head->name); // Segmentation fault
+        
+        run(head1, &variable_head);
     }
 
     return 0;

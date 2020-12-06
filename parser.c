@@ -121,7 +121,7 @@ static TreeNode* block() {
         temp = root;
         while(1) {
             getToken();
-            if (nextToken.code == INT_LIT || nextToken.code == FLOAT_LIT) {
+            if (nextToken.code == INT_LIT || nextToken.code == FLOAT_LIT || nextToken.code == IDENT) {
                 temp->child1 = new_node(nextToken);
                 temp = temp->child1;
             }

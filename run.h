@@ -48,7 +48,7 @@ typedef enum
 	APPEND,
 } Keyword4;	// func_type4에 속하는 함수
 
-Variable* run(const struct TreeNode* const, const struct Variable* const);
+void run(const struct TreeNode* const, const struct Variable** const);
 
 element* func_type1(const struct TreeNode* const);	// 매개변수가 1개인 함수
 element* func_type2(const struct TreeNode* const);	// 매개변수가 2개인 함수
