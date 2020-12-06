@@ -7,12 +7,15 @@
 #include "run.h"
 
 bool isRunningError = false;// running 과정에서 에러가 있는 경우 true. (main.c에 전달할 정보)
-struct Variable* v_head;	// 변수 저장
+struct Variable* v_head = NULL;	// 변수 저장
 
-void run(const struct TreeNode* const head, const struct Variable* const v_h)
+void run(const struct TreeNode* const head/*, const struct Variable* const v_h*/)
 {
-	v_head = v_h;
+	//v_head = v_h;
 	
+	if(strcmp(head->key.lexeme, "DEFVAR") && strcmp(head->key.lexeme, "SETQ") && head->key.code != IDENT)
+		preorderIdentSearch(head);	// AST를 전위순회하며 ident들을, variable 리스트 상의 value로 바꿔준다.
+
 	switch(head->key.code)
 	{
 		case FUNC_TYPE1:
@@ -33,6 +36,11 @@ void run(const struct TreeNode* const head, const struct Variable* const v_h)
 			break;
 		case FUNC_TYPE4:
 			func_type4(head);
+			break;
+		case IDENT:
+			print_l(find_variable(head->key.lexeme)->value.lexeme);
+		default:
+			print_l(head->key.lexeme);
 			break;
 	}
 }
@@ -148,19 +156,23 @@ element* func_type1(const struct TreeNode* const head)
 }
 
 // 매개변수가 2개인 함수
-element* func_type2(const struct TreeNode* const head)
+element* func_type2(const struct TreeNode* head)
 {
 	char* keywords[] = { "DEFVAR", "SETQ", "NTH", "CONS", "MEMBER", "REMOVE", "EQUAL"};
 	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords 배열 길이
 	int func_index = find_func_index(keywords, keywords_len);
 	
+	Variable *p;
+	element* result = malloc(sizeof(struct element));
+	bool isTrue = false;
+
 	switch (func_index + 200)
 	{
 	case DEFVAR:
 		if(head->child1->key.code != IDENT)
 			return error("1st argument should be IDENT");
 		
-		Variable *p = find_variable(head->child1->key.lexeme);
+		p = find_variable(head->child1->key.lexeme);
 		if (p == NULL) {
 			// 새로운 Variable 추가
 			Variable* temp = (Variable*)malloc(sizeof(Variable));
@@ -178,7 +190,7 @@ element* func_type2(const struct TreeNode* const head)
 		if(head->child1->key.code != IDENT)
 			return error("1st argument should be IDENT");
 		
-		Variable *p = find_variable(head->child1->key.lexeme);
+		p = find_variable(head->child1->key.lexeme);
 		if (p == NULL)
 			return error("undefined variable");
 		p->value = head->child2->key;	// 바인딩
@@ -212,7 +224,6 @@ element* func_type2(const struct TreeNode* const head)
 		if(head->child2->key.code != LIST_CODE)
 			return error("2nd argument should be LIST");
 
-		element* result = malloc(sizeof(struct element));
 		result->code = LIST_CODE;
 		result->listElem[0] = &head->child1->key;
 		for (int i = 0; head->child2->key.listElem[i] != NULL; i++)
@@ -232,7 +243,6 @@ element* func_type2(const struct TreeNode* const head)
 			return error("2nd argument should be LIST");
 
 		int foundIndex = -1;
-		element* result = malloc(sizeof(struct element));
 		result->code = LIST_CODE;
 
 		for (int i = 0; head->child2->key.listElem[i] != NULL; i++){
@@ -264,7 +274,6 @@ element* func_type2(const struct TreeNode* const head)
 			return error("2nd argument should be LIST");
 
 		int count = 0;
-		element* result = malloc(sizeof(struct element));
 		result->code = LIST_CODE;
 
 		for (int i = 0; head->child2->key.listElem[i] != NULL; i++){
@@ -278,10 +287,9 @@ element* func_type2(const struct TreeNode* const head)
 		break;
 
 	case EQUAL:
-		element* result = malloc(sizeof(struct element));
-		bool isTrue = isEqual(&head->child1->key, &head->child2->key);
+		isTrue = isEqual(&head->child1->key, &head->child2->key);
 		result->code = isTrue? T : NIL;
-		strcpy(result->lexeme, "T") : strcpy(result->lexeme, "NIL");
+		isTrue? strcpy(result->lexeme, "T") : strcpy(result->lexeme, "NIL");
 		return result;
 		break;
 	
@@ -400,7 +408,7 @@ element* func_type3(const struct TreeNode* const head)
 		}
 		break;
 	case IF:
-		expr_is_true = comparison(head->child1);
+		expr_is_true = comparison(head->child1)->code - NIL;	// 참이면 1(T-NIL), 거짓이면 0(NIL-NIL)
 
 		// child1(expr)이 true면,
 		// child2(stmt1) 수행;
@@ -425,7 +433,7 @@ element* func_type3(const struct TreeNode* const head)
 	return result;
 }
 
-element* func_type4() {
+element* func_type4(const struct TreeNode* const head) {
 	char* keywords[] = { "LIST", "APPEND", "CONS" };
 	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords 배열 길이
 	int func_index = find_func_index(keywords, keywords_len);
@@ -572,4 +580,21 @@ static element* error(char* message){
         printf("running error - %s\n", message);    
     isRunningError = true;
     return NULL;
+}
+
+
+void preorderIdentSearch(TreeNode* root) {
+	Variable* p;
+    if (root != NULL) {
+        if(root->key.code == IDENT){
+			p = find_variable(root->key.lexeme);
+			if (p != NULL)
+				root->key = p->value;
+			else
+				error("undefined variable name");
+		}
+        preorderIdentSearch(root->child1);
+        preorderIdentSearch(root->child2);
+        preorderIdentSearch(root->child3);
+    }
 }

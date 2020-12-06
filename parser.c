@@ -5,7 +5,6 @@
 
 #include "total.h"
 
-bool isSyntaxError = false;
 static element* tokenList;
 int curr;
 static element nextToken; //lexer의 nextChar과 역할이 비슷한 변수입니다.
@@ -27,6 +26,7 @@ void preorderPrint(TreeNode* root);
 /*****    main driver    *****/
 TreeNode* parser() {
     curr = -1; // 초기화
+    isSyntaxError = false;
     TreeNode* head = NULL;
     tokenList = tokens;
     head = block();
@@ -263,7 +263,7 @@ void printTree(TreeNode* root) {
     if (root->key.code != LIST_CODE)
         printf("현재 노드 {code: %d lexeme: %s}", root->key.code, root->key.lexeme);
     if (root->key.code == LIST_CODE) {
-        printf(" *이 노드는 lexeme 대신 listElem를 갖습니다: ");
+        printf("현재 노드는 lexeme 대신 listElem를 갖습니다: ");
         for (int i = 0; root->key.listElem[i] != NULL; i++)
             printf("{%d, %s} ", root->key.listElem[i]->code, root->key.listElem[i]->lexeme);
     }

@@ -26,7 +26,7 @@ void main()
     while (1) {
         printf(">> ");
         
-        gets(input); // 입력 받기
+        fgets(input, sizeof(input), stdin); // 입력 받기
         if (strcmp(input, "EXIT") == 0) { // EXIT면 종료
             printf("종료...");
             return 0;
@@ -47,8 +47,12 @@ void main()
 
         head1 = parser(); // parser 분석
 
+        if(isSyntaxError)
+            continue;  // 에러가 발생했으면 뒤의 run 건너뜀
+        
         /* parser 확인 함수 호출(포인터 지정) */
-        preorderPrint(head1);
+        //preorderPrint(head1);
+        run(head1);
     }
 
     return;

@@ -27,10 +27,10 @@ char nextChar;
 int lexLen;
 int token;
 int nextToken;
-char* keywords1[] = { "LIST", "CAR", "CDR", "CADDR", "REVERSE", "APPEND", "LENGTH",  "ASSOC",
-                     "NULL", "NUMBERP", "ZEROP", "MINUSP", "EQUAL", "STRINGP", "PRINT" };
-char* keywords2[] = { "SETQ", "NTH", "CONS", "MEMBER", "REMOVE","IF" };
-char* keywords3[] = { "SUBST" };
+char* keywords1[] = { "CAR", "CDR", "CADDR", "REVERSE", "LENGTH", "ATOM",
+						"NULL", "NUMBERP", "ZEROP", "MINUSP", "STRINGP", "PRINT" };
+char* keywords2[] = { "DEFVAR", "SETQ", "NTH", "CONS", "MEMBER", "REMOVE", "EQUAL" };
+char* keywords3[] = { "SUBST", "IF", "APPEND" };
 char* keywords4[] = { "COND" };
 
 FILE* in_fp;
@@ -104,17 +104,9 @@ int lookup(char ch) {
         addChar();
         nextToken = EQUAL_COMP;
         break;
-    case '!':
-        addChar();
-        nextToken = NOT_COMP;
-        break;
     case '\'':
         addChar();
         nextToken = APOSTROPHE;
-        break;
-    case '\\':
-        addChar();
-        nextToken = BACKSLASH;
         break;
     case '#':
         addChar();

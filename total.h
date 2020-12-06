@@ -52,12 +52,15 @@ typedef enum _boolean {
 #define DIV_OP 24       // /
 #define LEFT_PAREN 25   // (
 #define RIGHT_PAREN 26  // )
+
 #define LESS_COMP 27    // <
 #define GREATER_COMP 28 // >
 #define EQUAL_COMP 29   // =
-#define NOT_COMP 30     // !
-#define APOSTROPHE 31   // '
-#define BACKSLASH 32    // "\"
+#define LESS_EQUAL_COMP 30    // <=
+#define GREATER_EQUAL_COMP 31 // >=
+
+#define APOSTROPHE 32   // '
+
 #define HASH 33         // #
 #define DOUBLE_QUOT 34  // "
 #define DOT 35          // .
@@ -69,6 +72,7 @@ typedef enum _boolean {
 
 element tokens[100]; // return lexer 값
 int num; // tokens 수
+int isSyntaxError; // syntax error 발생 여부
 
 
 /* lexer 함수들 */
@@ -84,11 +88,6 @@ void float_check();
 
 /* parser 함수들 */
 
-static TreeNode* error(char* message);
-static void getToken();
-static TreeNode* block();
-static TreeNode* par();
-static TreeNode* list();
 TreeNode* new_node(element key);
 void postorderDelete(TreeNode* root);
 void destroyTree(TreeNode* root);

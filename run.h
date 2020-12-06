@@ -23,6 +23,7 @@ typedef enum
 	ZEROP,
 	MINUSP,
 	STRINGP,
+	PRINT,
 } Keyword1;	// func_type1에 속하는 함수
 
 typedef enum
@@ -42,10 +43,10 @@ typedef enum
 	IF,
 } Keyword3;	// fund_type3에 속하는 함수
 
-void run(const struct TreeNode* const, const struct Variable* const);
+//void run(const struct TreeNode* const, const struct Variable* const);
 
 element* func_type1(const struct TreeNode* const);	// 매개변수가 1개인 함수
-element* func_type2(const struct TreeNode* const);	// 매개변수가 2개인 함수
+element* func_type2(const struct TreeNode*);	// 매개변수가 2개인 함수
 element* func_type3(const struct TreeNode* const);	// 매개변수가 3개인 함수
 element* func_type4(const struct TreeNode* const);
 
@@ -62,5 +63,6 @@ element* make_listElem_reverse(element*, int);
 bool isEqual(element* arg1, element* arg2);
 void print_l(element*);
 static element* error(char* message);
+void preorderIdentSearch(TreeNode* root);
 
 #endif
