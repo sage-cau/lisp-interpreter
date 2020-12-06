@@ -13,4 +13,4 @@ run.o: total.h run.h run.c
 
 clean:
 	rm -f *.o
-	# rm -f $(TARGET)
+	rm -f $(TARGET)

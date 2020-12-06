@@ -62,7 +62,7 @@ static void getToken() {
 */
 static TreeNode* block() {
     TreeNode* root = NULL;
-
+    TreeNode* temp;
     getToken();
     if (nextToken.code != LEFT_PAREN) {
         return par();  // <PAR>
@@ -73,6 +73,9 @@ static TreeNode* block() {
     case FUNC_TYPE1:
         root = new_node(nextToken);
         root->child1 = block();       // 첫번째 자식에서 block()
+        getToken();
+        if (nextToken.code != RIGHT_PAREN)
+            return error("right paren is missing in block");
         break;
 
         // 함수 유형2 - 매개변수 block이 2개
@@ -81,33 +84,40 @@ static TreeNode* block() {
         root = new_node(nextToken);
         root->child1 = block();      // 첫번째 자식에서 block()
         root->child2 = block();     // 두번재 자식에서 block()
+        getToken();
+        if (nextToken.code != RIGHT_PAREN)
+            return error("right paren is missing in block");
         break;
 
     case LESS_COMP:
-        getToken();
-        if (nextToken.code == EQUAL_COMP) { //<= 인 경우
+        if (tokenList[curr+1].code == EQUAL_COMP) { //<= 인 경우
             nextToken.code = LESS_EQUAL_COMP;
             strcpy(nextToken.lexeme, "<=");
         }
         root = new_node(nextToken);
         root->child1 = block();      // 첫번째 자식에서 block()
         root->child2 = block();     // 두번재 자식에서 block()
+        getToken();
+        if (nextToken.code != RIGHT_PAREN)
+            return error("right paren is missing in block");
         break;
 
     case GREATER_COMP:
-        getToken();
-        if (nextToken.code == EQUAL_COMP) { //>= 인 경우
+        if (tokenList[curr+1].code == EQUAL_COMP) { //>= 인 경우
             nextToken.code = GREATER_EQUAL_COMP;
             strcpy(nextToken.lexeme, ">=");
         }
         root = new_node(nextToken);
         root->child1 = block();      // 첫번째 자식에서 block()
         root->child2 = block();     // 두번재 자식에서 block()
+        getToken();
+        if (nextToken.code != RIGHT_PAREN)
+            return error("right paren is missing in block");
         break;
 
     case ADD_OP: case SUB_OP: case MULT_OP: case DIV_OP:
         root = new_node(nextToken);
-        TreeNode* temp = root;
+        temp = root;
         while(1) {
             getToken();
             if (nextToken.code == INT_LIT || nextToken.code == FLOAT_LIT) {
@@ -169,12 +179,15 @@ static TreeNode* block() {
             }
             return error("left paren is missing in block");
         }
+        getToken();
+        if (nextToken.code != RIGHT_PAREN)
+            return error("right paren is missing in block");
         break;
 
     // 함수 유형4 - LIST 와 APPEND 함수
     case FUNC_TYPE4:
         root = new_node(nextToken);
-        TreeNode* temp = root;
+        temp = root;
         while(1) {
             getToken();
             if (nextToken.code == RIGHT_PAREN)
@@ -188,10 +201,6 @@ static TreeNode* block() {
     default:
         return error("undefined function in block");
     }
-    getToken();
-    if (nextToken.code != RIGHT_PAREN)
-        return error("right paren is missing in block");
-
     return root;
 }
 
@@ -208,6 +217,8 @@ static TreeNode* par() {
         getToken();
         if (nextToken.code == LEFT_PAREN)
             return list();
+        else
+            return par();
     }
     
     return error("there is a token that parser can't validate!");

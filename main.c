@@ -7,69 +7,74 @@
 
 FILE* in_fp;
 
-/*UI ÇÔ¼ö*/
+/*UI í•¨ìˆ˜*/
 int lexer_interface();
 
 
-/* main ÇÔ¼ö 
-- UI Á¦°ø 
-- ÀÔ·Â°ª lexer·Î ³Ñ°ÜÁÜ(³Ñ±æ¶§´Â ÆÄÀÏ·Î ³Ñ°ÜÁÖ°í lexer·Î ºĞ¼®µÈ Ãâ·Â°ª Àü¿ªº¯¼ö·Î ÀúÀå)
-- parser ÀÛ¾÷(Àü¿ªº¯¼ö·Î ÀúÀåµÈ lexer ºĞ¼®°ªÀ¸·Î »ç¿ë Æ÷ÀÎÅÍ·Î parser tree ¹ŞÀ½)
-(Ãß°¡·Î ÇØ¾ßµÉ ÀÛ¾÷Àº parser.c·Î ÀÛ¾÷µÈ parser tree¸¦ run.c·Î ³Ñ°ÜÁÖ°í ¸®ÅÏ°ªÀ» ¹Ş¾Æ¼­ Ãâ·Â Á¤µµ??) */
+/* main í•¨ìˆ˜ 
+- UI ì œê³µ 
+- ì…ë ¥ê°’ lexerë¡œ ë„˜ê²¨ì¤Œ(ë„˜ê¸¸ë•ŒëŠ” íŒŒì¼ë¡œ ë„˜ê²¨ì£¼ê³  lexerë¡œ ë¶„ì„ëœ ì¶œë ¥ê°’ ì „ì—­ë³€ìˆ˜ë¡œ ì €ì¥)
+- parser ì‘ì—…(ì „ì—­ë³€ìˆ˜ë¡œ ì €ì¥ëœ lexer ë¶„ì„ê°’ìœ¼ë¡œ ì‚¬ìš© í¬ì¸í„°ë¡œ parser tree ë°›ìŒ)
+(ì¶”ê°€ë¡œ í•´ì•¼ë  ì‘ì—…ì€ parser.cë¡œ ì‘ì—…ëœ parser treeë¥¼ run.cë¡œ ë„˜ê²¨ì£¼ê³  ë¦¬í„´ê°’ì„ ë°›ì•„ì„œ ì¶œë ¥ ì •ë„??) */
 
 void main()
 {
     /* Open the input data file and process its contents */
     TreeNode *head1;
+    Variable *variable_head = NULL;
     char input[1000];
     lexer_interface();
     while (1) {
         printf(">> ");
         
-        fgets(input, sizeof(input), stdin); // ÀÔ·Â ¹Ş±â
-        if (strcmp(input, "EXIT") == 0) { // EXIT¸é Á¾·á
-            printf("Á¾·á...");
+        fgets(input, sizeof(input), stdin); // ì…ë ¥ ë°›ê¸°
+        if (!strcmp(input, "EXIT\n") || !strcmp(input, "exit\n")) { // EXITë©´ ì¢…ë£Œ
+            printf("ì¢…ë£Œ...\n");
             return 0;
         }
         in_fp = fopen("out.txt", "w");
         if (in_fp == NULL)
             printf("error");
         else
-            fputs(input, in_fp); // ÀÔ·Â°ª out.txt ÆÄÀÏ¿¡ ÀúÀå
+            fputs(input, in_fp); // ì…ë ¥ê°’ out.txt íŒŒì¼ì— ì €ì¥
 
         fclose(in_fp);
-        lexer(); // lexer ºĞ¼®
+        lexer(); // lexer ë¶„ì„
 
-        /* lexer È®ÀÎ È£Ãâ(Àü¿ªº¯¼ö ÁöÁ¤) */
-       for (int i = 0; i < num; i++) {
-            printf("Next token: %d, Next lexeme: %s\n", tokens[i].code, tokens[i].lexeme);
-        }
+        /* lexer í™•ì¸ í˜¸ì¶œ(ì „ì—­ë³€ìˆ˜ ì§€ì •) */
+    //    for (int i = 0; i < num; i++) {
+    //         printf("Next token: %d, Next lexeme: %s\n", tokens[i].code, tokens[i].lexeme);
+    //     }
 
-        head1 = parser(); // parser ºĞ¼®
+        head1 = parser(); // parser ë¶„ì„
 
         if(isSyntaxError)
-            continue;  // ¿¡·¯°¡ ¹ß»ıÇßÀ¸¸é µÚÀÇ run °Ç³Ê¶Ü
+            continue;  // ì—ëŸ¬ê°€ ë°œìƒí–ˆìœ¼ë©´ ë’¤ì˜ run ê±´ë„ˆëœ€
         
-        /* parser È®ÀÎ ÇÔ¼ö È£Ãâ(Æ÷ÀÎÅÍ ÁöÁ¤) */
-        //preorderPrint(head1);
-        run(head1);
+        /* parser í™•ì¸ í•¨ìˆ˜ í˜¸ì¶œ(í¬ì¸í„° ì§€ì •) */
+        // preorderPrint(head1);
+        
+        variable_head = run(head1, variable_head);
+
+        printf("%s", variable_head->name);  // Segmentation fault
     }
 
     return;
 }
 
 
-/*½ÃÀÛ¶§ ¸ŞÀÎÈ­¸é Ãâ·Â ÇÔ¼ö*/
+/*ì‹œì‘ë•Œ ë©”ì¸í™”ë©´ ì¶œë ¥ í•¨ìˆ˜*/
 int lexer_interface() {
     printf("/***************************************************/\n");
     printf("/                                                   /\n");
     printf("/              LISP INTERPRETER !!!!!!              /\n");
     printf("/                                                   /\n");
-    printf("/             Àå¼ºÇö, ÀüÂù¿õ, Á¤´ÙÈñ                /\n");
+    printf("/             ì¥ì„±í˜„, ì „ì°¬ì›…, ì •ë‹¤í¬                /\n");
     printf("/                                                   /\n");
-    printf("/          --ÇÁ·Î±×·¡¹Ö¾ğ¾î·Ğ ÇÁ·ÎÁ§Æ®--            /\n");
+    printf("/          --í”„ë¡œê·¸ë˜ë°ì–¸ì–´ë¡  í”„ë¡œì íŠ¸--            /\n");
     printf("/                                                   /\n");
     printf("/***************************************************/\n");
-    printf("¸í·É¾î¸¦ ÀÔ·ÂÇÏ½Ã¿À...(Á¾·á½Ã EXIT ÀÔ·Â)\n");
+    printf("\n");
+    printf("ëª…ë ¹ì–´ë¥¼ ì…ë ¥í•˜ì‹œì˜¤...(ì¢…ë£Œì‹œ EXIT ì…ë ¥)\n");
 }
 

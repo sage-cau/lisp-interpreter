@@ -9,9 +9,9 @@
 bool isRunningError = false;// running 과정에서 에러가 있는 경우 true. (main.c에 전달할 정보)
 struct Variable* v_head = NULL;	// 변수 저장
 
-void run(const struct TreeNode* const head/*, const struct Variable* const v_h*/)
+Variable* run(const struct TreeNode* const head, const struct Variable* const v_h)
 {
-	//v_head = v_h;
+	v_head = v_h;
 	
 	if(strcmp(head->key.lexeme, "DEFVAR") && strcmp(head->key.lexeme, "SETQ") && head->key.code != IDENT)
 		preorderIdentSearch(head);	// AST를 전위순회하며 ident들을, variable 리스트 상의 value로 바꿔준다.
@@ -22,14 +22,14 @@ void run(const struct TreeNode* const head/*, const struct Variable* const v_h*/
 			print_l(func_type1(head));
 			break;
 		case FUNC_TYPE2:
-			func_type2(head);
+			print_l(func_type2(head));
 			break;
 		case LESS_COMP: case GREATER_COMP: case EQUAL_COMP: 
 		case LESS_EQUAL_COMP: case GREATER_EQUAL_COMP:
-			comparison(head);
+			print_l(comparison(head));
 			break;
 		case ADD_OP: case SUB_OP: case MULT_OP: case DIV_OP:
-			numeric_operation(head);
+			print_l(numeric_operation(head));
 			break;
 		case FUNC_TYPE3:
 			func_type3(head);
@@ -43,6 +43,7 @@ void run(const struct TreeNode* const head/*, const struct Variable* const v_h*/
 			print_l(head->key.lexeme);
 			break;
 	}
+	return v_head;
 }
 
 // 매개변수가 1개인 함수
@@ -178,8 +179,8 @@ element* func_type2(const struct TreeNode* head)
 			Variable* temp = (Variable*)malloc(sizeof(Variable));
 			strcpy(temp->name, head->child1->key.lexeme);
 			temp->value = head->child2->key;
-			temp->next = head;
-			head = temp;
+			temp->next = v_head;
+			v_head = temp;
 		}
 		else
 			p->value = head->child2->key;	// 바인딩
@@ -252,8 +253,9 @@ element* func_type2(const struct TreeNode* head)
 			}
 		}
 		if (foundIndex != -1){
-			for (int i = 0; head->child2->key.listElem[i+foundIndex] != NULL; i++)
-					result->listElem[i] = head->child2->key.listElem[i+foundIndex];
+			for (int i = 0; head->child2->key.listElem[i+foundIndex] != NULL; i++){
+				result->listElem[i] = head->child2->key.listElem[i+foundIndex];
+			}
 			return result;
 		}
 		else {
@@ -299,7 +301,8 @@ element* func_type2(const struct TreeNode* head)
 }
 
 element* comparison(const struct TreeNode* const head) {
-	if(head->child1->key.code == INT_LIT || head->child1->key.code == FLOAT_LIT) {
+	if(head->child1->key.code != INT_LIT && head->child1->key.code != FLOAT_LIT &&
+		head->child2->key.code != INT_LIT && head->child2->key.code != FLOAT_LIT) {
 		return error("wrong comparison operand type");
 	}
 
@@ -335,25 +338,31 @@ element* numeric_operation(const struct TreeNode* const head) {
 	double answer = 0;
 	bool isFloat = false;
 
+	
+
 	TreeNode* temp = head->child1;
-	while (temp != NULL) {
-		if(temp->key.code == FLOAT_LIT)
-			isFloat = true;
-		switch(head->key.code) {
-			case ADD_OP:
-				answer += atof(temp->key.lexeme);
-				break;
-			case SUB_OP:
-				answer -= atof(temp->key.lexeme);
-				break;
-			case MULT_OP:
-				answer *= atof(temp->key.lexeme);
-				break;
-			case DIV_OP:
-				answer /= atof(temp->key.lexeme);
-				break;
-		}
+	if (temp != NULL){
+		answer = atof(temp->key.lexeme);
 		temp = temp->child1;
+		while (temp != NULL) {
+			if(temp->key.code == FLOAT_LIT)
+				isFloat = true;
+			switch(head->key.code) {
+				case ADD_OP:
+					answer += atof(temp->key.lexeme);
+					break;
+				case SUB_OP:
+					answer -= atof(temp->key.lexeme);
+					break;
+				case MULT_OP:
+					answer *= atof(temp->key.lexeme);
+					break;
+				case DIV_OP:
+					answer /= atof(temp->key.lexeme);
+					break;
+			}
+			temp = temp->child1;
+		}
 	}
 	result->code = isFloat? FLOAT_LIT : INT_LIT;
 	sprintf(result->lexeme, isFloat? "%.2f": "%.f", answer); // 수를 문자열로 변환
@@ -529,7 +538,7 @@ int var_listElem_length(const struct Variable* const var)
 	int len = 0;
 
 	for (int i = 0; i < 100; i++)	// listElem 배열 크기: 100
-		if (var->value.listElem[i] == 0xcdcdcdcd) {
+		if (var->value.listElem[i] == NULL) {
 			len = i;
 			break;
 		}
@@ -544,7 +553,7 @@ int tree_listElem_length(const struct TreeNode* const child)
 	int len = 0;
 
 	for (int i = 0; i < 100; i++)	// listElem 배열 크기: 100
-		if (child->key.listElem[i] == 0xcdcdcdcd) {
+		if (child->key.listElem[i] == NULL) {
 			len = i;
 			break;
 		}
@@ -558,10 +567,10 @@ Variable* find_variable(char* var)
 	if (v_head == NULL)
 		return NULL;
 
-	Variable* curr = v_head->next;
+	Variable* curr = v_head;
 	while (curr != NULL)
 	{
-		if (curr->name == var)
+		if (!strcmp(curr->name, var))
 			return curr;
 
 		curr = curr->next;
@@ -596,12 +605,18 @@ element* make_listElem_reverse(const struct TreeNode* const head, element* resul
 
 // EQUAL FUNC의 재귀 호출을 이용한 구현
 bool isEqual(element* arg1, element* arg2) {
+	int i;
 	if(arg1->code == LIST_CODE) {
-		for (int i = 0; arg1->listElem[i] != NULL; i++){
+		for (i = 0; arg1->listElem[i] != NULL; i++){
+			if(arg2->listElem[i] == NULL)
+				return false;
 			if(!isEqual(arg1->listElem[i], arg2->listElem[i]))
 				return false;
 		}
-		return true;
+		if(arg2->listElem[i] != NULL)
+			return false;
+		else
+			return true;
 	}
 	else {
 		if (!strcmp(arg1->lexeme, arg2->lexeme))
@@ -619,7 +634,6 @@ void print_l(element* result)
 	else
 	{
 		int list_len = tree_listElem_length(result);
-
 		if (list_len == 1)	// 원소의 개수가 1개인 리스트
 			printf("%s ", result->lexeme);
 		else

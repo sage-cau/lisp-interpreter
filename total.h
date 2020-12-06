@@ -17,6 +17,14 @@ typedef struct TreeNode {
     struct TreeNode* child1, * child2, * child3;
 } TreeNode;
 
+// 변수 저장
+typedef struct Variable {
+	char name[100];
+	element value;
+	struct Variable* next;
+} Variable;
+
+
 /* boolean type define */
 typedef enum _boolean {
     FALSE,

@@ -326,10 +326,10 @@ void ident_change()
 
         sub_ele_num = ele_num;
 
-        if (tokens[sub_ele_num].code == DOUBLE_QUOT)
+        if (tokens[sub_ele_num].code == DOUBLE_QUOT) {
             if(tokens[++sub_ele_num].code == IDENT)
                 tokens[sub_ele_num].code = STRING;
-
+        }
         else if (tokens[sub_ele_num].code == APOSTROPHE) {
             sub_ele_num++;
             if (tokens[sub_ele_num].code == LEFT_PAREN) {
