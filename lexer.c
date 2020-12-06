@@ -36,23 +36,23 @@ char* keywords4[] = { "LIST", "APPEND" };
 FILE* in_fp;
 
 /******************************************/
-/* lexerÇÔ¼ö                              */
+/* lexerí•¨ìˆ˜                              */
 /******************************************/
 int lexer()
 {
     /* Open the input data file and process its contents */
     
     num = 0;
-    in_fp = fopen("out.txt", "r"); // ÆÄÀÏ ¿­¾î¼­ ÀĞ±â
+    in_fp = fopen("out.txt", "r"); // íŒŒì¼ ì—´ì–´ì„œ ì½ê¸°
     getChar();
 
     do {
         lex();
     } while (nextToken != EOF);
 
-    string_check(); // string Ã¼Å© ¶ç¾î¾²±â µÇ¾î ÀÖ´Â IDENT-> STRINGÀ¸·Î ¹­±â
-    float_check();  // 4.5 -> float·Î ºĞ·ù
-    ident_change(); // IDENT -> ATOM/STRING/IDENT ºĞ·ù ÀÌÁß¸®½ºÆ®µµ Ã³¸®
+    string_check(); // string ì²´í¬ ë„ì–´ì“°ê¸° ë˜ì–´ ìˆëŠ” IDENT-> STRINGìœ¼ë¡œ ë¬¶ê¸°
+    float_check();  // 4.5 -> floatë¡œ ë¶„ë¥˜
+    ident_change(); // IDENT -> ATOM/STRING/IDENT ë¶„ë¥˜ ì´ì¤‘ë¦¬ìŠ¤íŠ¸ë„ ì²˜ë¦¬
     fclose(in_fp);
 
     return 0;
@@ -231,7 +231,7 @@ int lex() {
             addChar();
             getChar();
         }
-        /* function type ¼¼ºĞÈ­ */
+        /* function type ì„¸ë¶„í™” */
         if (isReservedWords1(lexeme))
             nextToken = FUNC_TYPE1;
         else if (isReservedWords2(lexeme))
@@ -273,18 +273,18 @@ int lex() {
 
     // printf("Next token is: %d, Next lexeme is %s\n", nextToken, lexeme);
     // printf("num : %d\n", num);
-    if (nextToken != -1) { // EOF °ªÀº Á¦¿ÜÇß½À´Ï´Ù.
+    if (nextToken != -1) { // EOF ê°’ì€ ì œì™¸í–ˆìŠµë‹ˆë‹¤.
         tokens[num].code = nextToken;
         strcpy(tokens[num].lexeme, lexeme);
         num++;
     }
-    //tokens ±¸Á¶Ã¼¿¡ lexer °ª(¼ıÀÚ, ¹®ÀÚ ´ëÀÔ)
+    //tokens êµ¬ì¡°ì²´ì— lexer ê°’(ìˆ«ì, ë¬¸ì ëŒ€ì…)
 
     return nextToken;
 } /* End of function lex */
 
 
-/* " / HI / THERE / " -> " / HI THERE / " ´ÙÀ½Ã³·³ µ¿ÀÛ */
+/* " / HI / THERE / " -> " / HI THERE / " ë‹¤ìŒì²˜ëŸ¼ ë™ì‘ */
 void string_check()
 {
     int ele_num, sub_ele_num;
@@ -316,7 +316,7 @@ void string_check()
 }
 
 
-/* " IDENT " -> " STRING/ATOM/IDENT " ´ÙÀ½À¸·Î º¯È¯ */
+/* " IDENT " -> " STRING/ATOM/IDENT " ë‹¤ìŒìœ¼ë¡œ ë³€í™˜ */
 void ident_change()
 {
     int ele_num, sub_ele_num;
@@ -354,7 +354,7 @@ void ident_change()
 }
 
 
-/* " (/+/4/./5/5/./5/) " -> " (/+/4.5/5.5/) " ´ÙÀ½À¸·Î º¯È¯ */
+/* " (/+/4/./5/5/./5/) " -> " (/+/4.5/5.5/) " ë‹¤ìŒìœ¼ë¡œ ë³€í™˜ */
 void float_check()
 {
     int ele_num, sub_ele_num;

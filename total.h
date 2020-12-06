@@ -1,8 +1,8 @@
 
-/*lexer / parser / main °øÅë Çì´õ ÆÄÀÏÀÔ´Ï´Ù. 
-°øÅëÀ¸·Î »ç¿ëÇÏ´Â ÇÔ¼ö³ª ÀÚ·á±¸Á¶ Àü¿ªº¯¼öµîÀÌ ¸¹¾Æ¼­ ÇÏ³ªÀÇ Çì´õ ÆÄÀÏ·Î Á¤¸®Çß½À´Ï´Ù*/
+/*lexer / parser / main ê³µí†µ í—¤ë” íŒŒì¼ì…ë‹ˆë‹¤. 
+ê³µí†µìœ¼ë¡œ ì‚¬ìš©í•˜ëŠ” í•¨ìˆ˜ë‚˜ ìë£Œêµ¬ì¡° ì „ì—­ë³€ìˆ˜ë“±ì´ ë§ì•„ì„œ í•˜ë‚˜ì˜ í—¤ë” íŒŒì¼ë¡œ ì •ë¦¬í–ˆìŠµë‹ˆë‹¤*/
 
-/* Á¤ÀÇÇÑ ÀÚ·á±¸Á¶ */
+/* ì •ì˜í•œ ìë£Œêµ¬ì¡° */
 
 typedef struct element {
     int code;
@@ -17,7 +17,7 @@ typedef struct TreeNode {
     struct TreeNode* child1, * child2, * child3;
 } TreeNode;
 
-// º¯¼ö ÀúÀå
+// ë³€ìˆ˜ ì €ì¥
 typedef struct Variable {
 	char name[100];
 	element value;
@@ -78,12 +78,12 @@ typedef enum _boolean {
 
 /* Global Variable */
 
-element tokens[100]; // return lexer °ª
-int num; // tokens ¼ö
-int isSyntaxError; // syntax error ¹ß»ı ¿©ºÎ
+element tokens[100]; // return lexer ê°’
+int num; // tokens ìˆ˜
+int isSyntaxError; // syntax error ë°œìƒ ì—¬ë¶€
 
 
-/* lexer ÇÔ¼öµé */
+/* lexer í•¨ìˆ˜ë“¤ */
 
 int lexer();
 void addChar();
@@ -94,7 +94,7 @@ void ident_change();
 void string_check();
 void float_check();
 
-/* parser ÇÔ¼öµé */
+/* parser í•¨ìˆ˜ë“¤ */
 
 TreeNode* new_node(element key);
 void postorderDelete(TreeNode* root);
