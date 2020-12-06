@@ -27,11 +27,11 @@ char nextChar;
 int lexLen;
 int token;
 int nextToken;
-char* keywords1[] = { "CAR", "CDR", "CADDR", "REVERSE", "LENGTH", "ATOM",
-						"NULL", "NUMBERP", "ZEROP", "MINUSP", "STRINGP", "PRINT" };
+char* keywords1[] = { "CAR", "CDR", "CADDR", "REVERSE", "LENGTH", "ATOM", "NULL",
+                    "NUMBERP", "ZEROP", "MINUSP", "STRINGP", "PRINT" };
 char* keywords2[] = { "DEFVAR", "SETQ", "NTH", "CONS", "MEMBER", "REMOVE", "EQUAL" };
-char* keywords3[] = { "SUBST", "IF", "APPEND" };
-char* keywords4[] = { "COND" };
+char* keywords3[] = { "COND", "SUBST", "IF" };
+char* keywords4[] = { "LIST", "APPEND" };
 
 FILE* in_fp;
 
