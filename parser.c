@@ -133,12 +133,20 @@ static TreeNode* block() {
         break;
         // 함수 유형3 - 매개변수 block이 3개
     case FUNC_TYPE3:
-        // SUBST, IF 함수
-        if(strcmp(nextToken.lexeme, "COND")) {
+        // SUBST 함수
+         if(!strcmp(nextToken.lexeme, "SUBST")) {
             root = new_node(nextToken);
             root->child1 = block();      // 첫번째 자식에서 block()
             root->child2 = block();     // 두번재 자식에서 block()
             root->child3 = block();      // 세번째 자식에서 block()
+        }
+        //IF 함수
+        else if(!strcmp(nextToken.lexeme, "IF")) {
+            root = new_node(nextToken);
+            root->child1 = block();      // 첫번째 자식에서 block()
+            root->child2 = block();     // 두번재 자식에서 block()
+            if (tokenList[curr+1].code == LEFT_PAREN) // IF는 세번째 자식 생략 가능
+                root->child3 = block();      // 세번째 자식에서 block()
         }
         // COND 함수
         else {    
