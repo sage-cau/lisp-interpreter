@@ -122,51 +122,69 @@ static TreeNode* block() {
         break;
         // 함수 유형3 - 매개변수 block이 3개
     case FUNC_TYPE3:
-        root = new_node(nextToken);
-        root->child1 = block();      // 첫번째 자식에서 block()
-        root->child2 = block();     // 두번재 자식에서 block()
-        root->child3 = block();      // 세번째 자식에서 block()
-        break;
-
-        // 함수 유형4 - COND 함수
-    case FUNC_TYPE4:
-        root = new_node(nextToken);
-        // (<제1조건문> <수행문1>)
-        getToken();
-        if (nextToken.code == LEFT_PAREN) {
-            root->child1 = new_node(nextToken); // 편의상 '(' 담는 노드 추가
-            root->child1->child1 = block();     // <제1조건문>
-            root->child1->child2 = block();     // <수행문1>
-            getToken();
-            if (nextToken.code != RIGHT_PAREN)
-                return error("right paren is missing in block");
-
-            // (<제2조건문> <수행문2>)
-            // 원리는 1과 동일
+        // SUBST, IF 함수
+        if(strcmp(nextToken.lexeme, "COND")) {
+            root = new_node(nextToken);
+            root->child1 = block();      // 첫번째 자식에서 block()
+            root->child2 = block();     // 두번재 자식에서 block()
+            root->child3 = block();      // 세번째 자식에서 block()
+        }
+        // COND 함수
+        else {    
+            root = new_node(nextToken);
+            // (<제1조건문> <수행문1>)
             getToken();
             if (nextToken.code == LEFT_PAREN) {
-                root->child2 = new_node(nextToken);
-                root->child2->child1 = block();
-                root->child2->child2 = block();
+                root->child1 = new_node(nextToken); // 편의상 '(' 담는 노드 추가
+                root->child1->child1 = block();     // <제1조건문>
+                root->child1->child2 = block();     // <수행문1>
                 getToken();
                 if (nextToken.code != RIGHT_PAREN)
                     return error("right paren is missing in block");
 
-                // (<제3조건문> <수행문3>)
+                // (<제2조건문> <수행문2>)
                 // 원리는 1과 동일
                 getToken();
                 if (nextToken.code == LEFT_PAREN) {
-                    root->child3 = new_node(nextToken);
-                    root->child3->child1 = block();
-                    root->child3->child2 = block();
+                    root->child2 = new_node(nextToken);
+                    root->child2->child1 = block();
+                    root->child2->child2 = block();
                     getToken();
                     if (nextToken.code != RIGHT_PAREN)
                         return error("right paren is missing in block");
-                    break;
+
+                    // (<제3조건문> <수행문3>)
+                    // 원리는 1과 동일
+                    getToken();
+                    if (nextToken.code == LEFT_PAREN) {
+                        root->child3 = new_node(nextToken);
+                        root->child3->child1 = block();
+                        root->child3->child2 = block();
+                        getToken();
+                        if (nextToken.code != RIGHT_PAREN)
+                            return error("right paren is missing in block");
+                        break;
+                    }
                 }
             }
+            return error("left paren is missing in block");
         }
-        return error("left paren is missing in block");
+        break;
+
+    // 함수 유형4 - LIST 와 APPEND 함수
+    case FUNC_TYPE4:
+        root = new_node(nextToken);
+        TreeNode* temp = root;
+        while(1) {
+            getToken();
+            if (nextToken.code == RIGHT_PAREN)
+                break;
+            temp->child1 = par();
+            temp = temp->child1;
+        }
+        break;
+
+
     default:
         return error("undefined function in block");
     }
