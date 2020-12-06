@@ -7,9 +7,9 @@
 #include "run.h"
 
 bool isRunningError = false;		// running 과정에서 에러가 있는 경우 true. (main.c에 전달할 정보)
-struct Variable **v_head = NULL; // 변수 저장
+struct Variable *v_head = NULL; // 변수 저장
 
-void run(const struct TreeNode *const head, const struct Variable **const v_h)
+Variable *run(const struct TreeNode *const head, const struct Variable *const v_h)
 {
 	v_head = v_h;
 
@@ -44,12 +44,12 @@ void run(const struct TreeNode *const head, const struct Variable **const v_h)
 		print_l(func_type4(head));
 		break;
 	case IDENT:
-		print_l(&(find_variable(head->key.lexeme)->value));
-		break;
+		print_l(find_variable(head->key.lexeme)->value.lexeme);
 	default:
-		print_l(&head->key);
+		print_l(head->key.lexeme);
 		break;
 	}
+	return v_head;
 }
 
 // 매개변수가 1개인 함수
@@ -204,7 +204,7 @@ element *func_type2(const struct TreeNode *head)
 			strcpy(temp->name, head->child1->key.lexeme);
 			temp->value = head->child2->key;
 			temp->next = v_head;
-			*v_head = temp;
+			v_head = temp;
 		}
 		else
 			p->value = head->child2->key; // 바인딩
@@ -488,14 +488,14 @@ element *func_type3(const struct TreeNode *const head)
 
 		result->code = LIST_CODE;
 
-		for (int i = 0; head->child2->key.listElem[i] != NULL; i++)
+		for (int i = 0; head->child3->key.listElem[i] != NULL; i++)
 		{
 			result->listElem[i] = malloc(sizeof(struct element));
 
 			if (!strcmp(head->child2->key.lexeme, head->child3->key.listElem[i]->lexeme))
-				strcpy(result->listElem[i], head->child1->key.lexeme);
+				strcpy(result->listElem[i]->lexeme, head->child1->key.lexeme);
 			else
-				strcpy(result->listElem[i], head->child3->key.listElem[i]->lexeme);
+				strcpy(result->listElem[i]->lexeme, head->child3->key.listElem[i]->lexeme);
 		}
 		break;
 	case IF:
@@ -596,45 +596,13 @@ int find_func_index(const struct TreeNode *const head, char *keywords[], int len
 	return func_index;
 }
 
-// 리스트 개수 구하기
-// 파라미터가 변수인 경우
-int var_listElem_length(const struct Variable *const var)
-{
-	int len = 0;
-
-	for (int i = 0; i < 100; i++) // listElem 배열 크기: 100
-		if (var->value.listElem[i] == NULL)
-		{
-			len = i;
-			break;
-		}
-
-	return len;
-}
-
-// 리스트 개수 구하기
-// 파라미터가 변수가 아닌 경우
-int tree_listElem_length(const struct TreeNode *const child)
-{
-	int len = 0;
-
-	for (int i = 0; i < 100; i++) // listElem 배열 크기: 100
-		if (child->key.listElem[i] == NULL)
-		{
-			len = i;
-			break;
-		}
-
-	return len;
-}
-
 // 원하는 변수 찾기
 Variable *find_variable(char *var)
 {
-	if (*v_head == NULL)
+	if (v_head == NULL)
 		return NULL;
 
-	Variable *curr = *v_head;
+	Variable *curr = v_head;
 	while (curr != NULL)
 	{
 		if (!strcmp(curr->name, var))
