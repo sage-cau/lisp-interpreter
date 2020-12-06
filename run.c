@@ -6,61 +6,67 @@
 #include <string.h>
 #include "run.h"
 
-bool isRunningError = false;// running °úÁ¤¿¡¼­ ¿¡·¯°¡ ÀÖ´Â °æ¿ì true. (main.c¿¡ Àü´ŞÇÒ Á¤º¸)
-struct Variable* v_head = NULL;	// º¯¼ö ÀúÀå
+bool isRunningError = false;		// running ê³¼ì •ì—ì„œ ì—ëŸ¬ê°€ ìˆëŠ” ê²½ìš° true. (main.cì— ì „ë‹¬í•  ì •ë³´)
+struct Variable **v_head = NULL; // ë³€ìˆ˜ ì €ì¥
 
-Variable* run(const struct TreeNode* const head, const struct Variable* const v_h)
+void run(const struct TreeNode *const head, const struct Variable **const v_h)
 {
 	v_head = v_h;
-	
-	if(strcmp(head->key.lexeme, "DEFVAR") && strcmp(head->key.lexeme, "SETQ") && head->key.code != IDENT)
-		preorderIdentSearch(head);	// AST¸¦ ÀüÀ§¼øÈ¸ÇÏ¸ç identµéÀ», variable ¸®½ºÆ® »óÀÇ value·Î ¹Ù²ãÁØ´Ù.
 
-	switch(head->key.code)
+	if (strcmp(head->key.lexeme, "DEFVAR") && strcmp(head->key.lexeme, "SETQ") && head->key.code != IDENT)
+		preorderIdentSearch(head); // ASTë¥¼ ì „ìœ„ìˆœíšŒí•˜ë©° identë“¤ì„, variable ë¦¬ìŠ¤íŠ¸ ìƒì˜ valueë¡œ ë°”ê¿”ì¤€ë‹¤.
+
+	switch (head->key.code)
 	{
-		case FUNC_TYPE1:
-			print_l(func_type1(head));
-			break;
-		case FUNC_TYPE2:
-			print_l(func_type2(head));
-			break;
-		case LESS_COMP: case GREATER_COMP: case EQUAL_COMP: 
-		case LESS_EQUAL_COMP: case GREATER_EQUAL_COMP:
-			print_l(comparison(head));
-			break;
-		case ADD_OP: case SUB_OP: case MULT_OP: case DIV_OP:
-			print_l(numeric_operation(head));
-			break;
-		case FUNC_TYPE3:
-			func_type3(head);
-			break;
-		case FUNC_TYPE4:
-			func_type4(head);
-			break;
-		case IDENT:
-			print_l(find_variable(head->key.lexeme)->value.lexeme);
-		default:
-			print_l(head->key.lexeme);
-			break;
+	case FUNC_TYPE1:
+		print_l(func_type1(head));
+		break;
+	case FUNC_TYPE2:
+		print_l(func_type2(head));
+		break;
+	case LESS_COMP:
+	case GREATER_COMP:
+	case EQUAL_COMP:
+	case LESS_EQUAL_COMP:
+	case GREATER_EQUAL_COMP:
+		print_l(comparison(head));
+		break;
+	case ADD_OP:
+	case SUB_OP:
+	case MULT_OP:
+	case DIV_OP:
+		print_l(numeric_operation(head));
+		break;
+	case FUNC_TYPE3:
+		print_l(func_type3(head));
+		break;
+	case FUNC_TYPE4:
+		print_l(func_type4(head));
+		break;
+	case IDENT:
+		print_l(&(find_variable(head->key.lexeme)->value));
+		break;
+	default:
+		print_l(&head->key);
+		break;
 	}
-	return v_head;
 }
 
-// ¸Å°³º¯¼ö°¡ 1°³ÀÎ ÇÔ¼ö
-element* func_type1(const struct TreeNode* const head)
+// ë§¤ê°œë³€ìˆ˜ê°€ 1ê°œì¸ í•¨ìˆ˜
+element *func_type1(const struct TreeNode *const head)
 {
-	char* keywords[] = { "CAR", "CDR", "CADDR", "REVERSE", "LENGTH", "ATOM",
-						"NULL", "NUMBERP", "ZEROP", "MINUSP", "STRINGP", "PRINT" };
-	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords ¹è¿­ ±æÀÌ
+	char *keywords[] = {"CAR", "CDR", "CADDR", "REVERSE", "LENGTH", "ATOM",
+											"NULL", "NUMBERP", "ZEROP", "MINUSP", "STRINGP", "PRINT"};
+	int keywords_len = sizeof(keywords) / sizeof(char *); // keywords ë°°ì—´ ê¸¸ì´
 	int func_index = find_func_index(head, keywords, keywords_len);
 
-	// child1ÀÌ º¯¼ö³Ä, ¾Æ´Ï³Ä
-	Variable* var = find_variable(head->key.lexeme[0]);	// ÀúÀåµÈ º¯¼öÀÎÁö
+	// child1ì´ ë³€ìˆ˜ëƒ, ì•„ë‹ˆëƒ
+	Variable *var = find_variable(head->key.lexeme[0]); // ì €ì¥ëœ ë³€ìˆ˜ì¸ì§€
 	int child1_code;
 	int child1_num;
 	int listElem_len;
 
-	// º¯¼ö¸é
+	// ë³€ìˆ˜ë©´
 	if (var)
 	{
 		child1_code = var->value.code;
@@ -68,7 +74,7 @@ element* func_type1(const struct TreeNode* const head)
 			child1_num = atoi(var->value.lexeme);
 		listElem_len = var_listElem_length(var);
 	}
-	// º¯¼ö°¡ ¾Æ´Ï¸é
+	// ë³€ìˆ˜ê°€ ì•„ë‹ˆë©´
 	else
 	{
 		child1_code = head->child1->key.code;
@@ -77,58 +83,58 @@ element* func_type1(const struct TreeNode* const head)
 		listElem_len = tree_listElem_length(head->child1);
 	}
 
-	element* result = malloc(sizeof(struct element));
-	bool isPredicateFunc = false;	// Predicate ÇÔ¼öÀÎÁö
-	bool isTrue = false;	// Predicate ÇÔ¼ö¿¡¼­ °ªÀÌ trueÀÎÁö
+	element *result = malloc(sizeof(struct element));
+	bool isPredicateFunc = false; // Predicate í•¨ìˆ˜ì¸ì§€
+	bool isTrue = false;					// Predicate í•¨ìˆ˜ì—ì„œ ê°’ì´ trueì¸ì§€
 
 	switch (func_index + KEYWORD1)
 	{
-	case CAR:	// ¸®½ºÆ®ÀÇ Ã¹¹øÂ° ¿ø¼Ò °¡Á®¿È
+	case CAR: // ë¦¬ìŠ¤íŠ¸ì˜ ì²«ë²ˆì§¸ ì›ì†Œ ê°€ì ¸ì˜´
 		result->code = child1_code;
 		strcpy(result->lexeme, head->child1->key.listElem[0]->lexeme);
 		break;
-	case CDR:	// ¸®½ºÆ®ÀÇ Ã¹¹øÂ° ¿ø¼Ò¸¦ Á¦¿ÜÇÑ ³ª¸ÓÁö¸¦ °á°ú·Î »ı¼º
+	case CDR: // ë¦¬ìŠ¤íŠ¸ì˜ ì²«ë²ˆì§¸ ì›ì†Œë¥¼ ì œì™¸í•œ ë‚˜ë¨¸ì§€ë¥¼ ê²°ê³¼ë¡œ ìƒì„±
 		result->code = child1_code;
 		result = make_listElem_cdr(head, result, listElem_len);
 		break;
-	case CADDR:	// ¸®½ºÆ®ÀÇ ¼¼¹øÂ° ¿ø¼Ò¸¦ ±¸ÇÔ
+	case CADDR: // ë¦¬ìŠ¤íŠ¸ì˜ ì„¸ë²ˆì§¸ ì›ì†Œë¥¼ êµ¬í•¨
 		result->code = child1_code;
 		strcpy(result->lexeme, head->child1->key.listElem[2]->lexeme);
 		break;
-	case REVERSE:	// ÁÖ¾îÁø ¸®½ºÆ® ¾ÈÀÇ ¿ø¼ÒÀÇ ¼ø¼­¸¦ °Å²Ù·Î ¹Ù²Ş
+	case REVERSE: // ì£¼ì–´ì§„ ë¦¬ìŠ¤íŠ¸ ì•ˆì˜ ì›ì†Œì˜ ìˆœì„œë¥¼ ê±°ê¾¸ë¡œ ë°”ê¿ˆ
 		result->code = child1_code;
 		result = make_listElem_reverse(head, result, listElem_len);
 		break;
-	case LENGTH:	// ÁÖ¾îÁø ¸®½ºÆ® ³»ÀÇ ¿ø¼Ò °³¼ö¸¦ °ªÀ¸·Î ¹İÈ¯
+	case LENGTH: // ì£¼ì–´ì§„ ë¦¬ìŠ¤íŠ¸ ë‚´ì˜ ì›ì†Œ ê°œìˆ˜ë¥¼ ê°’ìœ¼ë¡œ ë°˜í™˜
 		result->code = INT_LIT;
 		sprintf(result->lexeme, "%d", listElem_len);
 		break;
-	case _ATOM:	// ATOM(½Éº¼)ÀÏ ¶§¸¸ Âü(true)¸¦ ¹İÈ¯
+	case _ATOM: // ATOM(ì‹¬ë³¼)ì¼ ë•Œë§Œ ì°¸(true)ë¥¼ ë°˜í™˜
 		isPredicateFunc = true;
 		if (child1_code == ATOM)
 			isTrue = true;
 		break;
-	case _NULL:	// NILÀÏ ¶§¸¸ Âü(true)À» ¹İÈ¯
+	case _NULL: // NILì¼ ë•Œë§Œ ì°¸(true)ì„ ë°˜í™˜
 		isPredicateFunc = true;
 		if (child1_code == NIL)
 			isTrue = true;
 		break;
-	case NUMBERP:	// ¼ıÀÚÀÏ ¶§¸¸ Âü(true)À» ¹İÈ¯
+	case NUMBERP: // ìˆ«ìì¼ ë•Œë§Œ ì°¸(true)ì„ ë°˜í™˜
 		isPredicateFunc = true;
 		if (child1_code == INT_LIT)
 			isTrue = true;
 		break;
-	case ZEROP:	// 0ÀÏ ¶§¸¸ Âü(true)À» ¹İÈ¯
+	case ZEROP: // 0ì¼ ë•Œë§Œ ì°¸(true)ì„ ë°˜í™˜
 		isPredicateFunc = true;
 		if (child1_num == 0)
 			isTrue = true;
 		break;
-	case MINUSP:	// À½¼öÀÏ ¶§¸¸ Âü(true)À» ¹İÈ¯
+	case MINUSP: // ìŒìˆ˜ì¼ ë•Œë§Œ ì°¸(true)ì„ ë°˜í™˜
 		isPredicateFunc = true;
 		if (child1_num < 0)
 			isTrue = true;
 		break;
-	case STRINGP:	// STRINGÀÏ ¶§¸¸ Âü(true)À» ¹İÈ¯
+	case STRINGP: // STRINGì¼ ë•Œë§Œ ì°¸(true)ì„ ë°˜í™˜
 		isPredicateFunc = true;
 		if (child1_code == STRING)
 			isTrue = true;
@@ -141,13 +147,16 @@ element* func_type1(const struct TreeNode* const head)
 		break;
 	}
 
-	// Predicate ÇÔ¼öÀÇ °æ¿ì
-	if (isPredicateFunc) {
-		if (isTrue) {
+	// Predicate í•¨ìˆ˜ì˜ ê²½ìš°
+	if (isPredicateFunc)
+	{
+		if (isTrue)
+		{
 			result->code = T;
 			strcpy(result->lexeme, "T");
 		}
-		else {
+		else
+		{
 			result->code = NIL;
 			strcpy(result->lexeme, "NIL");
 		}
@@ -156,230 +165,256 @@ element* func_type1(const struct TreeNode* const head)
 	return result;
 }
 
-// ¸Å°³º¯¼ö°¡ 2°³ÀÎ ÇÔ¼ö
-element* func_type2(const struct TreeNode* head)
+// ë§¤ê°œë³€ìˆ˜ê°€ 2ê°œì¸ í•¨ìˆ˜
+element *func_type2(const struct TreeNode *head)
 {
-	char* keywords[] = { "DEFVAR", "SETQ", "NTH", "CONS", "MEMBER", "REMOVE", "EQUAL"};
-	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords ¹è¿­ ±æÀÌ
+	char *keywords[] = {"DEFVAR", "SETQ", "NTH", "CONS", "MEMBER", "REMOVE", "EQUAL"};
+	int keywords_len = sizeof(keywords) / sizeof(char *); // keywords ë°°ì—´ ê¸¸ì´
 	int func_index = find_func_index(head, keywords, keywords_len);
-	
+
 	Variable *p;
-	element* result = malloc(sizeof(struct element));
+	element *result = malloc(sizeof(struct element));
 	bool isTrue = false;
 
 	switch (func_index + KEYWORD2)
 	{
 	case DEFVAR:
-		if(head->child1->key.code != IDENT)
+		if (head->child1->key.code != IDENT)
 			return error("1st argument should be IDENT");
-		
+
 		p = find_variable(head->child1->key.lexeme);
-		if (p == NULL) {
-			// »õ·Î¿î Variable Ãß°¡
-			Variable* temp = (Variable*)malloc(sizeof(Variable));
+		if (p == NULL)
+		{
+			// ìƒˆë¡œìš´ Variable ì¶”ê°€
+			Variable *temp = (Variable *)malloc(sizeof(Variable));
 			strcpy(temp->name, head->child1->key.lexeme);
 			temp->value = head->child2->key;
 			temp->next = v_head;
-			v_head = temp;
+			*v_head = temp;
 		}
 		else
-			p->value = head->child2->key;	// ¹ÙÀÎµù
+			p->value = head->child2->key; // ë°”ì¸ë”©
 		return &head->child1->key;
 		break;
-	
+
 	case SETQ:
-		if(head->child1->key.code != IDENT)
+		if (head->child1->key.code != IDENT)
 			return error("1st argument should be IDENT");
-		
+
 		p = find_variable(head->child1->key.lexeme);
 		if (p == NULL)
 			return error("undefined variable");
-		p->value = head->child2->key;	// ¹ÙÀÎµù
+		p->value = head->child2->key; // ë°”ì¸ë”©
 		return &head->child1->key;
 		break;
-	
+
 	case NTH:
-		if(head->child1->key.code != INT_LIT)
+		if (head->child1->key.code != INT_LIT)
 			return error("1st argument should be INT");
-		
-		if(head->child2->key.code != LIST_CODE)
+
+		if (head->child2->key.code != LIST_CODE)
 			return error("2nd argument should be LIST");
-		
+
 		int index = atoi(head->child1->key.lexeme);
 		if (head->child2->key.listElem[index] != NULL)
 			return head->child2->key.listElem[index];
-		else {	// ¸®½ºÆ® Å©±â¸¦ ¹ş¾î³ª´Â À§Ä¡¸¦ ÂüÁ¶ÇÑ °æ¿ì
+		else
+		{ // ë¦¬ìŠ¤íŠ¸ í¬ê¸°ë¥¼ ë²—ì–´ë‚˜ëŠ” ìœ„ì¹˜ë¥¼ ì°¸ì¡°í•œ ê²½ìš°
 			element temp = {NIL, "NIL"};
 			return &temp;
 		}
 		break;
 
 	case CONS:
-		switch(head->child1->key.code){
-			case INT_LIT: case ATOM: case STRING: case NIL: /*case T: */
-				break;
-			default:
-				return error("1st argument has wrong type");
-				break;
+		switch (head->child1->key.code)
+		{
+		case INT_LIT:
+		case ATOM:
+		case STRING:
+		case NIL: /*case T: */
+			break;
+		default:
+			return error("1st argument has wrong type");
+			break;
 		}
-		if(head->child2->key.code != LIST_CODE)
+		if (head->child2->key.code != LIST_CODE)
 			return error("2nd argument should be LIST");
 
 		result->code = LIST_CODE;
 		result->listElem[0] = &head->child1->key;
 		for (int i = 0; head->child2->key.listElem[i] != NULL; i++)
-			result->listElem[i+1] = head->child2->key.listElem[i];
+			result->listElem[i + 1] = head->child2->key.listElem[i];
 		return result;
 		break;
 
 	case MEMBER:
-		switch(head->child1->key.code){
-			case INT_LIT: case ATOM: case STRING: case NIL: /*case T: */
-				break;
-			default:
-				return error("1st argument has wrong type");
-				break;
+		switch (head->child1->key.code)
+		{
+		case INT_LIT:
+		case ATOM:
+		case STRING:
+		case NIL: /*case T: */
+			break;
+		default:
+			return error("1st argument has wrong type");
+			break;
 		}
-		if(head->child2->key.code != LIST_CODE)
+		if (head->child2->key.code != LIST_CODE)
 			return error("2nd argument should be LIST");
 
 		int foundIndex = -1;
 		result->code = LIST_CODE;
 
-		for (int i = 0; head->child2->key.listElem[i] != NULL; i++){
-			if(!strcmp(head->child1->key.lexeme, head->child2->key.listElem[i]->lexeme)){
+		for (int i = 0; head->child2->key.listElem[i] != NULL; i++)
+		{
+			if (!strcmp(head->child1->key.lexeme, head->child2->key.listElem[i]->lexeme))
+			{
 				foundIndex = i;
 				break;
 			}
 		}
-		if (foundIndex != -1){
-			for (int i = 0; head->child2->key.listElem[i+foundIndex] != NULL; i++){
-				result->listElem[i] = head->child2->key.listElem[i+foundIndex];
+		if (foundIndex != -1)
+		{
+			for (int i = 0; head->child2->key.listElem[i + foundIndex] != NULL; i++)
+			{
+				result->listElem[i] = head->child2->key.listElem[i + foundIndex];
 			}
 			return result;
 		}
-		else {
+		else
+		{
 			element temp = {NIL, "NIL"};
 			return &temp;
 		}
 		break;
 
 	case REMOVE:
-		switch(head->child1->key.code){
-			case INT_LIT: case ATOM: case STRING: case NIL: /*case T: */
-				break;
-			default:
-				return error("1st argument has wrong type");
-				break;
+		switch (head->child1->key.code)
+		{
+		case INT_LIT:
+		case ATOM:
+		case STRING:
+		case NIL: /*case T: */
+			break;
+		default:
+			return error("1st argument has wrong type");
+			break;
 		}
-		if(head->child2->key.code != LIST_CODE)
+		if (head->child2->key.code != LIST_CODE)
 			return error("2nd argument should be LIST");
 
 		int count = 0;
 		result->code = LIST_CODE;
 
-		for (int i = 0; head->child2->key.listElem[i] != NULL; i++){
-			if(!strcmp(head->child1->key.lexeme, head->child2->key.listElem[i]->lexeme)){
+		for (int i = 0; head->child2->key.listElem[i] != NULL; i++)
+		{
+			if (!strcmp(head->child1->key.lexeme, head->child2->key.listElem[i]->lexeme))
+			{
 				count++;
 				continue;
 			}
-			result->listElem[i-count] = head->child2->key.listElem[i];
+			result->listElem[i - count] = head->child2->key.listElem[i];
 		}
 		return result;
 		break;
 
 	case EQUAL:
 		isTrue = isEqual(&head->child1->key, &head->child2->key);
-		result->code = isTrue? T : NIL;
-		isTrue? strcpy(result->lexeme, "T") : strcpy(result->lexeme, "NIL");
+		result->code = isTrue ? T : NIL;
+		isTrue ? strcpy(result->lexeme, "T") : strcpy(result->lexeme, "NIL");
 		return result;
 		break;
-	
+
 	default:
 		break;
 	}
 }
 
-element* comparison(const struct TreeNode* const head) {
-	if(head->child1->key.code != INT_LIT && head->child1->key.code != FLOAT_LIT &&
-		head->child2->key.code != INT_LIT && head->child2->key.code != FLOAT_LIT) {
+element *comparison(const struct TreeNode *const head)
+{
+	if (head->child1->key.code != INT_LIT && head->child1->key.code != FLOAT_LIT &&
+			head->child2->key.code != INT_LIT && head->child2->key.code != FLOAT_LIT)
+	{
 		return error("wrong comparison operand type");
 	}
 
 	double num1 = atof(head->child1->key.lexeme);
 	double num2 = atof(head->child2->key.lexeme);
 	bool isTrue = false;
-	element* result = malloc(sizeof(struct element));
+	element *result = malloc(sizeof(struct element));
 
-	switch(head->key.code) {
-		case LESS_COMP:
-			isTrue = (num1 < num2);
-			break;
-		case GREATER_COMP:
-			isTrue = (num1 > num2);
-			break;
-		case EQUAL_COMP:
-			isTrue = (num1 == num2);
-			break;
-		case LESS_EQUAL_COMP:
-			isTrue = (num1 <= num2);
-			break;
-		case GREATER_EQUAL_COMP:
-			isTrue = (num1 >= num2);
-			break;
+	switch (head->key.code)
+	{
+	case LESS_COMP:
+		isTrue = (num1 < num2);
+		break;
+	case GREATER_COMP:
+		isTrue = (num1 > num2);
+		break;
+	case EQUAL_COMP:
+		isTrue = (num1 == num2);
+		break;
+	case LESS_EQUAL_COMP:
+		isTrue = (num1 <= num2);
+		break;
+	case GREATER_EQUAL_COMP:
+		isTrue = (num1 >= num2);
+		break;
 	}
-	result->code = isTrue? T : NIL;
-	isTrue? strcpy(result->lexeme, "T") : strcpy(result->lexeme, "NIL");
+	result->code = isTrue ? T : NIL;
+	isTrue ? strcpy(result->lexeme, "T") : strcpy(result->lexeme, "NIL");
 	return result;
 }
 
-element* numeric_operation(const struct TreeNode* const head) {
-	element* result = malloc(sizeof(struct element));
+element *numeric_operation(const struct TreeNode *const head)
+{
+	element *result = malloc(sizeof(struct element));
 	double answer = 0;
 	bool isFloat = false;
 
-	
-
-	TreeNode* temp = head->child1;
-	if (temp != NULL){
+	TreeNode *temp = head->child1;
+	if (temp != NULL)
+	{
 		answer = atof(temp->key.lexeme);
 		temp = temp->child1;
-		while (temp != NULL) {
-			if(temp->key.code == FLOAT_LIT)
+		while (temp != NULL)
+		{
+			if (temp->key.code == FLOAT_LIT)
 				isFloat = true;
-			switch(head->key.code) {
-				case ADD_OP:
-					answer += atof(temp->key.lexeme);
-					break;
-				case SUB_OP:
-					answer -= atof(temp->key.lexeme);
-					break;
-				case MULT_OP:
-					answer *= atof(temp->key.lexeme);
-					break;
-				case DIV_OP:
-					answer /= atof(temp->key.lexeme);
-					break;
+			switch (head->key.code)
+			{
+			case ADD_OP:
+				answer += atof(temp->key.lexeme);
+				break;
+			case SUB_OP:
+				answer -= atof(temp->key.lexeme);
+				break;
+			case MULT_OP:
+				answer *= atof(temp->key.lexeme);
+				break;
+			case DIV_OP:
+				answer /= atof(temp->key.lexeme);
+				break;
 			}
 			temp = temp->child1;
 		}
 	}
-	result->code = isFloat? FLOAT_LIT : INT_LIT;
-	sprintf(result->lexeme, isFloat? "%.2f": "%.f", answer); // ¼ö¸¦ ¹®ÀÚ¿­·Î º¯È¯
-	// ½Ç¼ö°¡ Æ÷ÇÔµÇ¾ú´ø ¿¬»êÀº ¼Ò¼öÁ¡ µÑÂ°ÀÚ¸®±îÁö, Á¤¼ö¸¸ Æ÷ÇÔµÇ¾ú´ø ¿¬»êÀº ¼Ò¼öÁ¡ ¾øÀÌ Ãâ·Â
+	result->code = isFloat ? FLOAT_LIT : INT_LIT;
+	sprintf(result->lexeme, isFloat ? "%.2f" : "%.f", answer); // ìˆ˜ë¥¼ ë¬¸ìì—´ë¡œ ë³€í™˜
+	// ì‹¤ìˆ˜ê°€ í¬í•¨ë˜ì—ˆë˜ ì—°ì‚°ì€ ì†Œìˆ˜ì  ë‘˜ì§¸ìë¦¬ê¹Œì§€, ì •ìˆ˜ë§Œ í¬í•¨ë˜ì—ˆë˜ ì—°ì‚°ì€ ì†Œìˆ˜ì  ì—†ì´ ì¶œë ¥
 	return result;
 }
 
-// ¸Å°³º¯¼ö°¡ 3°³ÀÎ ÇÔ¼ö
-element* func_type3(const struct TreeNode* const head)
+// ë§¤ê°œë³€ìˆ˜ê°€ 3ê°œì¸ í•¨ìˆ˜
+element *func_type3(const struct TreeNode *const head)
 {
-	char* keywords[] = { "COND", "SUBST", "IF" };
-	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords ¹è¿­ ±æÀÌ
+	char *keywords[] = {"COND", "SUBST", "IF"};
+	int keywords_len = sizeof(keywords) / sizeof(char *); // keywords ë°°ì—´ ê¸¸ì´
 	int func_index = find_func_index(head, keywords, keywords_len);
 
-	element* result = malloc(sizeof(struct element));
-	bool if_expr_is_true = false;	// IF func
-	bool cond_expr_is_true[3] = { false, false, false };	// COND func
+	element *result = malloc(sizeof(struct element));
+	bool if_expr_is_true = false;											 // IF func
+	bool cond_expr_is_true[3] = {false, false, false}; // COND func
 
 	switch (func_index + KEYWORD3)
 	{
@@ -388,39 +423,46 @@ element* func_type3(const struct TreeNode* const head)
 		cond_expr_is_true[1] = comparison(head->child2->child1);
 		cond_expr_is_true[2] = comparison(head->child3->child1);
 
-		// Ã¹¹øÂ° expr°¡ ÂüÀÌ¸é
-		if (cond_expr_is_true[0]) {
+		// ì²«ë²ˆì§¸ exprê°€ ì°¸ì´ë©´
+		if (cond_expr_is_true[0])
+		{
 			if (head->child1->child2->child2 == NULL)
-				result = func_type1(head->child1->child2);	// ¸Å°³º¯¼ö°¡ 1°³¸é			
+				result = func_type1(head->child1->child2); // ë§¤ê°œë³€ìˆ˜ê°€ 1ê°œë©´
 			else
-				result = numeric_operation(head->child1->child2);	// ¸Å°³º¯¼ö°¡ 2°³¸é
+				result = numeric_operation(head->child1->child2); // ë§¤ê°œë³€ìˆ˜ê°€ 2ê°œë©´
 		}
-		// µÎ¹øÂ° expr°¡ ÂüÀÌ¸é
-		else if (cond_expr_is_true[1]) {
+		// ë‘ë²ˆì§¸ exprê°€ ì°¸ì´ë©´
+		else if (cond_expr_is_true[1])
+		{
 			if (head->child2->child2->child2 == NULL)
-				result = func_type1(head->child2->child2);	// ¸Å°³º¯¼ö°¡ 1°³¸é			
+				result = func_type1(head->child2->child2); // ë§¤ê°œë³€ìˆ˜ê°€ 1ê°œë©´
 			else
-				result = numeric_operation(head->child2->child2);	// ¸Å°³º¯¼ö°¡ 2°³¸é
+				result = numeric_operation(head->child2->child2); // ë§¤ê°œë³€ìˆ˜ê°€ 2ê°œë©´
 		}
-		// ¼¼¹øÂ° expr°¡ ÂüÀÌ¸é
-		else if (cond_expr_is_true[2]) {
+		// ì„¸ë²ˆì§¸ exprê°€ ì°¸ì´ë©´
+		else if (cond_expr_is_true[2])
+		{
 			if (head->child3->child2->child2 == NULL)
-				result = func_type1(head->child3->child2);	// ¸Å°³º¯¼ö°¡ 1°³¸é			
+				result = func_type1(head->child3->child2); // ë§¤ê°œë³€ìˆ˜ê°€ 1ê°œë©´
 			else
-				result = numeric_operation(head->child3->child2);	// ¸Å°³º¯¼ö°¡ 2°³¸é
+				result = numeric_operation(head->child3->child2); // ë§¤ê°œë³€ìˆ˜ê°€ 2ê°œë©´
 		}
 		break;
 	case SUBST:
-		switch (head->child1->key.code) {
-		case INT_LIT: case ATOM: /*case T: */
+		switch (head->child1->key.code)
+		{
+		case INT_LIT:
+		case ATOM: /*case T: */
 			break;
 		default:
 			return error("1st argument has wrong type");
 			break;
 		}
 
-		switch (head->child2->key.code) {
-		case INT_LIT: case ATOM: /*case T: */
+		switch (head->child2->key.code)
+		{
+		case INT_LIT:
+		case ATOM: /*case T: */
 			break;
 		default:
 			return error("2nd argument has wrong type");
@@ -432,7 +474,8 @@ element* func_type3(const struct TreeNode* const head)
 
 		result->code = LIST_CODE;
 
-		for (int i = 0; head->child2->key.listElem[i] != NULL; i++) {
+		for (int i = 0; head->child2->key.listElem[i] != NULL; i++)
+		{
 			result->listElem[i] = malloc(sizeof(struct element));
 
 			if (!strcmp(head->child2->key.lexeme, head->child3->key.listElem[i]->lexeme))
@@ -442,19 +485,21 @@ element* func_type3(const struct TreeNode* const head)
 		}
 		break;
 	case IF:
-		// comparison ÇÔ¼ö´Â element*¸¦ ¹İÈ¯ÇÏ±â ¶§¹®¿¡ ¼öÁ¤Çß½À´Ï´Ù.
-		if_expr_is_true = comparison(head->child1)->code - NIL;	// ÂüÀÌ¸é 1(T-NIL), °ÅÁşÀÌ¸é 0(NIL-NIL)
+		// comparison í•¨ìˆ˜ëŠ” element*ë¥¼ ë°˜í™˜í•˜ê¸° ë•Œë¬¸ì— ìˆ˜ì •í–ˆìŠµë‹ˆë‹¤.
+		if_expr_is_true = comparison(head->child1)->code - NIL; // ì°¸ì´ë©´ 1(T-NIL), ê±°ì§“ì´ë©´ 0(NIL-NIL)
 
-		// child1(expr)ÀÌ true¸é,
-		// child2(stmt1) ¼öÇà;
-		if (if_expr_is_true) {
+		// child1(expr)ì´ trueë©´,
+		// child2(stmt1) ìˆ˜í–‰;
+		if (if_expr_is_true)
+		{
 			if (head->child2->child2 == NULL)
-				result = func_type1(head->child2);	// ¸Å°³º¯¼ö°¡ 1°³¸é			
+				result = func_type1(head->child2); // ë§¤ê°œë³€ìˆ˜ê°€ 1ê°œë©´
 			else
-				result = numeric_operation(head->child2);	// ¸Å°³º¯¼ö°¡ 2°³¸é
+				result = numeric_operation(head->child2); // ë§¤ê°œë³€ìˆ˜ê°€ 2ê°œë©´
 		}
-		// child3(stmt2) ¼öÇà
-		else {
+		// child3(stmt2) ìˆ˜í–‰
+		else
+		{
 			if (head->child3->child2 == NULL)
 				result = func_type1(head->child3);
 			else
@@ -468,15 +513,16 @@ element* func_type3(const struct TreeNode* const head)
 	return result;
 }
 
-// ¸Å°³º¯¼öÀÇ °³¼ö°¡ À¯µ¿ÀûÀÎ ÇÔ¼ö
-element* func_type4(const struct TreeNode* const head) {
-	char* keywords[] = { "LIST", "APPEND" };
-	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords ¹è¿­ ±æÀÌ
+// ë§¤ê°œë³€ìˆ˜ì˜ ê°œìˆ˜ê°€ ìœ ë™ì ì¸ í•¨ìˆ˜
+element *func_type4(const struct TreeNode *const head)
+{
+	char *keywords[] = {"LIST", "APPEND"};
+	int keywords_len = sizeof(keywords) / sizeof(char *); // keywords ë°°ì—´ ê¸¸ì´
 	int func_index = find_func_index(head, keywords, keywords_len);
 
 	//Variable* var = find_variable(head->child1->key.lexeme);
-	element* result = malloc(sizeof(struct element));
-	TreeNode* temp = head->child1;
+	element *result = malloc(sizeof(struct element));
+	TreeNode *temp = head->child1;
 	int index, i;
 
 	switch (func_index + KEYWORD4)
@@ -485,7 +531,8 @@ element* func_type4(const struct TreeNode* const head) {
 		result->code = LIST_CODE;
 
 		index = 0;
-		while (temp != NULL) {
+		while (temp != NULL)
+		{
 			result->listElem[index] = malloc(sizeof(struct element));
 			result->listElem[index]->code = temp->key.code;
 			strcpy(result->listElem[index]->lexeme, temp->key.lexeme);
@@ -498,8 +545,10 @@ element* func_type4(const struct TreeNode* const head) {
 		result->code = LIST_CODE;
 
 		index = 0;
-		while (temp != NULL) {
-			for (i = 0; temp->key.listElem[i] != NULL; i++) {
+		while (temp != NULL)
+		{
+			for (i = 0; temp->key.listElem[i] != NULL; i++)
+			{
 				result->listElem[index + i] = malloc(sizeof(struct element));
 				result->listElem[index + i]->code = temp->key.listElem[i]->code;
 				strcpy(result->listElem[index + i]->lexeme, temp->key.listElem[i]->lexeme);
@@ -516,13 +565,15 @@ element* func_type4(const struct TreeNode* const head) {
 	return result;
 }
 
-// ¾î¶² ÇÔ¼öÀÎÁö Ã£±â
-int find_func_index(const struct TreeNode* const head, char* keywords[], int len)
+// ì–´ë–¤ í•¨ìˆ˜ì¸ì§€ ì°¾ê¸°
+int find_func_index(const struct TreeNode *const head, char *keywords[], int len)
 {
 	int func_index = -1;
 
-	for (int i = 0; i < len; i++) {
-		if (!strcmp(head->key.lexeme, keywords[i])) {
+	for (int i = 0; i < len; i++)
+	{
+		if (!strcmp(head->key.lexeme, keywords[i]))
+		{
 			func_index = i;
 			break;
 		}
@@ -531,14 +582,15 @@ int find_func_index(const struct TreeNode* const head, char* keywords[], int len
 	return func_index;
 }
 
-// ¸®½ºÆ® °³¼ö ±¸ÇÏ±â
-// ÆÄ¶ó¹ÌÅÍ°¡ º¯¼öÀÎ °æ¿ì
-int var_listElem_length(const struct Variable* const var)
+// ë¦¬ìŠ¤íŠ¸ ê°œìˆ˜ êµ¬í•˜ê¸°
+// íŒŒë¼ë¯¸í„°ê°€ ë³€ìˆ˜ì¸ ê²½ìš°
+int var_listElem_length(const struct Variable *const var)
 {
 	int len = 0;
 
-	for (int i = 0; i < 100; i++)	// listElem ¹è¿­ Å©±â: 100
-		if (var->value.listElem[i] == NULL) {
+	for (int i = 0; i < 100; i++) // listElem ë°°ì—´ í¬ê¸°: 100
+		if (var->value.listElem[i] == NULL)
+		{
 			len = i;
 			break;
 		}
@@ -546,14 +598,15 @@ int var_listElem_length(const struct Variable* const var)
 	return len;
 }
 
-// ¸®½ºÆ® °³¼ö ±¸ÇÏ±â
-// ÆÄ¶ó¹ÌÅÍ°¡ º¯¼ö°¡ ¾Æ´Ñ °æ¿ì
-int tree_listElem_length(const struct TreeNode* const child)
+// ë¦¬ìŠ¤íŠ¸ ê°œìˆ˜ êµ¬í•˜ê¸°
+// íŒŒë¼ë¯¸í„°ê°€ ë³€ìˆ˜ê°€ ì•„ë‹Œ ê²½ìš°
+int tree_listElem_length(const struct TreeNode *const child)
 {
 	int len = 0;
 
-	for (int i = 0; i < 100; i++)	// listElem ¹è¿­ Å©±â: 100
-		if (child->key.listElem[i] == NULL) {
+	for (int i = 0; i < 100; i++) // listElem ë°°ì—´ í¬ê¸°: 100
+		if (child->key.listElem[i] == NULL)
+		{
 			len = i;
 			break;
 		}
@@ -561,13 +614,13 @@ int tree_listElem_length(const struct TreeNode* const child)
 	return len;
 }
 
-// ¿øÇÏ´Â º¯¼ö Ã£±â
-Variable* find_variable(char* var)
+// ì›í•˜ëŠ” ë³€ìˆ˜ ì°¾ê¸°
+Variable *find_variable(char *var)
 {
-	if (v_head == NULL)
+	if (*v_head == NULL)
 		return NULL;
 
-	Variable* curr = v_head;
+	Variable *curr = *v_head;
 	while (curr != NULL)
 	{
 		if (!strcmp(curr->name, var))
@@ -580,61 +633,67 @@ Variable* find_variable(char* var)
 }
 
 // CDR FUNC
-element* make_listElem_cdr(const struct TreeNode* const head, element* result, int len)
+element *make_listElem_cdr(const struct TreeNode *const head, element *result, int len)
 {
-	for (int i = 0; i < len - 1; i++) {
+	for (int i = 0; i < len - 1; i++)
+	{
 		result->listElem[i] = malloc(sizeof(struct element));
 		result->listElem[i]->code = head->child1->key.listElem[i + 1]->code;
-		strcpy(result->listElem[i]->lexeme, head->child1->key.listElem[i + 1]->lexeme);	// Ã¹¹øÂ° ¿ø¼Ò Á¦¿ÜÇÑ ³ª¸ÓÁö
+		strcpy(result->listElem[i]->lexeme, head->child1->key.listElem[i + 1]->lexeme); // ì²«ë²ˆì§¸ ì›ì†Œ ì œì™¸í•œ ë‚˜ë¨¸ì§€
 	}
 
 	return result;
 }
 
 // REVERSE FUNC
-element* make_listElem_reverse(const struct TreeNode* const head, element* result, int len)
+element *make_listElem_reverse(const struct TreeNode *const head, element *result, int len)
 {
-	for (int i = 0; i < len; i++) {
+	for (int i = 0; i < len; i++)
+	{
 		result->listElem[i] = malloc(sizeof(struct element));
 		result->listElem[i]->code = head->child1->key.listElem[len - 1 - i]->code;
-		strcpy(result->listElem[i]->lexeme, head->child1->key.listElem[len - 1 - i]->lexeme);	// ¿ª¼øÀ¸·Î
+		strcpy(result->listElem[i]->lexeme, head->child1->key.listElem[len - 1 - i]->lexeme); // ì—­ìˆœìœ¼ë¡œ
 	}
 
 	return result;
 }
 
-// EQUAL FUNCÀÇ Àç±Í È£ÃâÀ» ÀÌ¿ëÇÑ ±¸Çö
-bool isEqual(element* arg1, element* arg2) {
+// EQUAL FUNCì˜ ì¬ê·€ í˜¸ì¶œì„ ì´ìš©í•œ êµ¬í˜„
+bool isEqual(element *arg1, element *arg2)
+{
 	int i;
-	if(arg1->code == LIST_CODE) {
-		for (i = 0; arg1->listElem[i] != NULL; i++){
-			if(arg2->listElem[i] == NULL)
+	if (arg1->code == LIST_CODE)
+	{
+		for (i = 0; arg1->listElem[i] != NULL; i++)
+		{
+			if (arg2->listElem[i] == NULL)
 				return false;
-			if(!isEqual(arg1->listElem[i], arg2->listElem[i]))
+			if (!isEqual(arg1->listElem[i], arg2->listElem[i]))
 				return false;
 		}
-		if(arg2->listElem[i] != NULL)
+		if (arg2->listElem[i] != NULL)
 			return false;
 		else
 			return true;
 	}
-	else {
+	else
+	{
 		if (!strcmp(arg1->lexeme, arg2->lexeme))
 			return true;
 	}
 }
 
-// °á°ú Ãâ·ÂÇÏ±â
-void print_l(element* result)
+// ê²°ê³¼ ì¶œë ¥í•˜ê¸°
+void print_l(element *result)
 {
-	// ¸®½ºÆ®°¡ ¾Æ´Ñ °æ¿ì
+	// ë¦¬ìŠ¤íŠ¸ê°€ ì•„ë‹Œ ê²½ìš°
 	if (result->code != LIST_CODE)
 		printf("%s ", result->lexeme);
-	// ¸®½ºÆ®ÀÎ °æ¿ì
+	// ë¦¬ìŠ¤íŠ¸ì¸ ê²½ìš°
 	else
 	{
 		int list_len = tree_listElem_length(result);
-		if (list_len == 1)	// ¿ø¼ÒÀÇ °³¼ö°¡ 1°³ÀÎ ¸®½ºÆ®
+		if (list_len == 1) // ì›ì†Œì˜ ê°œìˆ˜ê°€ 1ê°œì¸ ë¦¬ìŠ¤íŠ¸
 			printf("%s ", result->lexeme);
 		else
 		{
@@ -651,27 +710,30 @@ void print_l(element* result)
 	printf("\n");
 }
 
-/* error - ¿¡·¯ Ã³¸® ÇÔ¼ö */
-static element* error(char* message){
-    if(!isRunningError)
-        printf("running error - %s\n", message);    
-    isRunningError = true;
-    return NULL;
+/* error - ì—ëŸ¬ ì²˜ë¦¬ í•¨ìˆ˜ */
+static element *error(char *message)
+{
+	if (!isRunningError)
+		printf("running error - %s\n", message);
+	isRunningError = true;
+	return NULL;
 }
 
-
-void preorderIdentSearch(TreeNode* root) {
-	Variable* p;
-    if (root != NULL) {
-        if(root->key.code == IDENT){
+void preorderIdentSearch(TreeNode *root)
+{
+	Variable *p;
+	if (root != NULL)
+	{
+		if (root->key.code == IDENT)
+		{
 			p = find_variable(root->key.lexeme);
 			if (p != NULL)
 				root->key = p->value;
 			else
 				error("undefined variable name");
 		}
-        preorderIdentSearch(root->child1);
-        preorderIdentSearch(root->child2);
-        preorderIdentSearch(root->child3);
-    }
+		preorderIdentSearch(root->child1);
+		preorderIdentSearch(root->child2);
+		preorderIdentSearch(root->child3);
+	}
 }
