@@ -16,7 +16,7 @@ int lex();
 void ident_change();
 void string_check();
 void float_check();
-
+void string_check2();
 /* Global Variable */
 
 
@@ -36,23 +36,24 @@ char* keywords4[] = { "LIST", "APPEND" };
 FILE* in_fp;
 
 /******************************************/
-/* lexerÌï®Ïàò                              */
+/* lexer«‘ºˆ                              */
 /******************************************/
 int lexer()
 {
     /* Open the input data file and process its contents */
-    
+
     num = 0;
-    in_fp = fopen("out.txt", "r"); // ÌååÏùº Ïó¥Ïñ¥ÏÑú ÏùΩÍ∏∞
+    in_fp = fopen("out.txt", "r"); // ∆ƒ¿œ ø≠æÓº≠ ¿–±‚
     getChar();
 
     do {
         lex();
     } while (nextToken != EOF);
 
-    string_check(); // string Ï≤¥ÌÅ¨ ÎùÑÏñ¥Ïì∞Í∏∞ ÎêòÏñ¥ ÏûàÎäî IDENT-> STRINGÏúºÎ°ú Î¨∂Í∏∞
-    float_check();  // 4.5 -> floatÎ°ú Î∂ÑÎ•ò
-    ident_change(); // IDENT -> ATOM/STRING/IDENT Î∂ÑÎ•ò Ïù¥Ï§ëÎ¶¨Ïä§Ìä∏ÎèÑ Ï≤òÎ¶¨
+    string_check(); // string √º≈© ∂ÁæÓæ≤±‚ µ«æÓ ¿÷¥¬ IDENT-> STRING¿∏∑Œ π≠±‚
+    string_check2();
+    float_check();  // 4.5 -> float∑Œ ∫–∑˘
+    ident_change(); // IDENT -> ATOM/STRING/IDENT ∫–∑˘ ¿Ã¡ﬂ∏ÆΩ∫∆Æµµ √≥∏Æ
     fclose(in_fp);
 
     return 0;
@@ -231,7 +232,7 @@ int lex() {
             addChar();
             getChar();
         }
-        /* function type ÏÑ∏Î∂ÑÌôî */
+        /* function type ºº∫–»≠ */
         if (isReservedWords1(lexeme))
             nextToken = FUNC_TYPE1;
         else if (isReservedWords2(lexeme))
@@ -272,19 +273,19 @@ int lex() {
     } /* End of switch */
 
     // printf("Next token is: %d, Next lexeme is %s\n", nextToken, lexeme);
-    // printf("num : %d\n", num);
-    if (nextToken != -1) { // EOF Í∞íÏùÄ Ï†úÏô∏ÌñàÏäµÎãàÎã§.
-        tokens[num].code = nextToken;
-        strcpy(tokens[num].lexeme, lexeme);
-        num++;
-    }
-    //tokens Íµ¨Ï°∞Ï≤¥Ïóê lexer Í∞í(Ïà´Ïûê, Î¨∏Ïûê ÎåÄÏûÖ)
+// printf("num : %d\n", num);
+if (nextToken != -1) { // EOF ∞™¿∫ ¡¶ø‹«ﬂΩ¿¥œ¥Ÿ.
+    tokens[num].code = nextToken;
+    strcpy(tokens[num].lexeme, lexeme);
+    num++;
+}
+//tokens ±∏¡∂√ºø° lexer ∞™(º˝¿⁄, πÆ¿⁄ ¥Î¿‘)
 
-    return nextToken;
+return nextToken;
 } /* End of function lex */
 
 
-/* " / HI / THERE / " -> " / HI THERE / " Îã§ÏùåÏ≤òÎüº ÎèôÏûë */
+/* " / HI / THERE / " -> " / HI THERE / " ¥Ÿ¿Ω√≥∑≥ µø¿€ */
 void string_check()
 {
     int ele_num, sub_ele_num;
@@ -294,7 +295,7 @@ void string_check()
 
         sub_ele_num = ele_num;
         if (tokens[sub_ele_num].code == DOUBLE_QUOT) {
-            
+
             start = ++sub_ele_num;
             end = start;
 
@@ -305,7 +306,7 @@ void string_check()
             }
             num_string = end - start;
 
-            for (int i = start+1; i < num; i++) {
+            for (int i = start + 1; i < num; i++) {
                 tokens[i].code = tokens[i + num_string].code;
                 strcpy(tokens[i].lexeme, tokens[i + num_string].lexeme);
             }
@@ -316,7 +317,7 @@ void string_check()
 }
 
 
-/* " IDENT " -> " STRING/ATOM/IDENT " Îã§ÏùåÏúºÎ°ú Î≥ÄÌôò */
+/* " IDENT " -> " STRING/ATOM/IDENT " ¥Ÿ¿Ω¿∏∑Œ ∫Ø»Ø */
 void ident_change()
 {
     int ele_num, sub_ele_num;
@@ -327,7 +328,7 @@ void ident_change()
         sub_ele_num = ele_num;
 
         if (tokens[sub_ele_num].code == DOUBLE_QUOT) {
-            if(tokens[++sub_ele_num].code == IDENT)
+            if (tokens[++sub_ele_num].code == IDENT)
                 tokens[sub_ele_num].code = STRING;
         }
         else if (tokens[sub_ele_num].code == APOSTROPHE) {
@@ -347,14 +348,56 @@ void ident_change()
 
             else if (tokens[sub_ele_num].code == IDENT)
                 tokens[sub_ele_num].code = ATOM;
-        
+
         }
     }
     return;
 }
 
 
-/* " (/+/4/./5/5/./5/) " -> " (/+/4.5/5.5/) " Îã§ÏùåÏúºÎ°ú Î≥ÄÌôò */
+void string_check2() {
+    int ele_num, sub_ele_num;
+
+    for (ele_num = 0; ele_num < num; ele_num++) {
+
+        sub_ele_num = ele_num;
+        
+        if (tokens[sub_ele_num].code == DOUBLE_QUOT) {
+            strcat(tokens[sub_ele_num].lexeme, tokens[sub_ele_num + 1].lexeme);
+            strcat(tokens[sub_ele_num].lexeme, tokens[sub_ele_num + 2].lexeme);
+            tokens[sub_ele_num].code = STRING;
+
+            for (int i = sub_ele_num + 1; i < num; i++) {
+                tokens[i].code = tokens[i + 2].code;
+                strcpy(tokens[i].lexeme, tokens[i + 2].lexeme);
+            }
+            num -= 2;
+        }
+
+        if (strcmp(tokens[sub_ele_num].lexeme, "MINUSP") == 0){
+            if (tokens[sub_ele_num + 1].code == SUB_OP) {
+                if (tokens[sub_ele_num + 2].code == INT_LIT) {
+                    strcat(tokens[sub_ele_num+1].lexeme, tokens[sub_ele_num + 2].lexeme);
+                    tokens[sub_ele_num + 1].code = INT_LIT;
+                }
+                else if (tokens[sub_ele_num + 2].code == FLOAT_LIT) {
+                    strcat(tokens[sub_ele_num + 1].lexeme, tokens[sub_ele_num + 2].lexeme);
+                    tokens[sub_ele_num + 1].code = FLOAT_LIT;
+                }
+                if(num > sub_ele_num+2){
+                    for (int i = sub_ele_num + 2; i < num; i++) {
+                        tokens[i].code = tokens[i + 1].code;
+                        strcpy(tokens[i].lexeme, tokens[i + 1].lexeme);
+                    }
+                }
+                num -= 1;
+            }
+        }
+    }
+    return;
+}
+
+/* " (/+/4/./5/5/./5/) " -> " (/+/4.5/5.5/) " ¥Ÿ¿Ω¿∏∑Œ ∫Ø»Ø */
 void float_check()
 {
     int ele_num, sub_ele_num;
@@ -370,7 +413,7 @@ void float_check()
                     strcat(tokens[start].lexeme, tokens[start + 1].lexeme);
                     strcat(tokens[start].lexeme, tokens[start + 2].lexeme);
                     tokens[start].code = FLOAT_LIT;
-                    
+
                     for (int i = start + 1; i < num; i++) {
                         tokens[i].code = tokens[i + 2].code;
                         strcpy(tokens[i].lexeme, tokens[i + 2].lexeme);

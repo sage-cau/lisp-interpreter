@@ -1,9 +1,3 @@
-
-/*lexer / parser / main 공통 헤더 파일입니다. 
-공통으로 사용하는 함수나 자료구조 전역변수등이 많아서 하나의 헤더 파일로 정리했습니다*/
-
-/* 정의한 자료구조 */
-
 typedef struct element {
     int code;
     union {
@@ -17,11 +11,11 @@ typedef struct TreeNode {
     struct TreeNode* child1, * child2, * child3;
 } TreeNode;
 
-// 변수 저장
+// ���� ����
 typedef struct Variable {
-	char name[100];
-	element value;
-	struct Variable* next;
+    char name[100];
+    element value;
+    struct Variable* next;
 } Variable;
 
 
@@ -78,12 +72,12 @@ typedef enum _boolean {
 
 /* Global Variable */
 
-element tokens[100]; // return lexer 값
-int num; // tokens 수
-int isSyntaxError; // syntax error 발생 여부
+element tokens[100]; // return lexer ��
+int num; // tokens ��
+int isSyntaxError; // syntax error �߻� ����
 
 
-/* lexer 함수들 */
+/* lexer �Լ��� */
 
 int lexer();
 void addChar();
@@ -93,8 +87,8 @@ int lex();
 void ident_change();
 void string_check();
 void float_check();
-
-/* parser 함수들 */
+void string_check2();
+/* parser �Լ��� */
 
 TreeNode* new_node(element key);
 void postorderDelete(TreeNode* root);
