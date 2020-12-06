@@ -64,6 +64,7 @@ typedef enum _boolean {
 #define HASH 33         // # 
 #define DOUBLE_QUOT 34  // " 
 #define DOT 35          // . 
+#define SEMI_COL 40     // ;
 
 #define LIST_CODE 50
 
