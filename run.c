@@ -43,7 +43,7 @@ element* func_type1(const struct TreeNode* const head)
 	char* keywords[] = { "CAR", "CDR", "CADDR", "REVERSE", "LENGTH", "ATOM",
 						"NULL", "NUMBERP", "ZEROP", "MINUSP", "STRINGP", "PRINT" };
 	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords 배열 길이
-	int func_index = find_func_index(keywords, keywords_len);
+	int func_index = find_func_index(head, keywords, keywords_len);
 
 	// child1이 변수냐, 아니냐
 	Variable* var = find_variable(head->key.lexeme[0]);	// 저장된 변수인지
@@ -80,7 +80,7 @@ element* func_type1(const struct TreeNode* const head)
 		break;
 	case CDR:	// 리스트의 첫번째 원소를 제외한 나머지를 결과로 생성
 		result->code = child1_code;
-		result = make_listElem_cdr(result, listElem_len);
+		result = make_listElem_cdr(head, result, listElem_len);
 		break;
 	case CADDR:	// 리스트의 세번째 원소를 구함
 		result->code = child1_code;
@@ -88,7 +88,7 @@ element* func_type1(const struct TreeNode* const head)
 		break;
 	case REVERSE:	// 주어진 리스트 안의 원소의 순서를 거꾸로 바꿈
 		result->code = child1_code;
-		result = make_listElem_reverse(result, listElem_len);
+		result = make_listElem_reverse(head, result, listElem_len);
 		break;
 	case LENGTH:	// 주어진 리스트 내의 원소 개수를 값으로 반환
 		result->code = INT_LIT;
@@ -152,7 +152,7 @@ element* func_type2(const struct TreeNode* const head)
 {
 	char* keywords[] = { "DEFVAR", "SETQ", "NTH", "CONS", "MEMBER", "REMOVE", "EQUAL"};
 	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords 배열 길이
-	int func_index = find_func_index(keywords, keywords_len);
+	int func_index = find_func_index(head, keywords, keywords_len);
 	
 	switch (func_index + KEYWORD2)
 	{
@@ -356,18 +356,43 @@ element* numeric_operation(const struct TreeNode* const head) {
 // 매개변수가 3개인 함수
 element* func_type3(const struct TreeNode* const head)
 {
-	char* keywords[] = { "SUBST", "IF" };
+	char* keywords[] = { "COND", "SUBST", "IF" };
 	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords 배열 길이
-	int func_index = find_func_index(keywords, keywords_len);
+	int func_index = find_func_index(head, keywords, keywords_len);
 
-	//Variable* p1 = find_variable(head->child1->key.lexeme);
-	//Variable* p2 = find_variable(head->child2->key.lexeme);
-	//Variable* p3 = find_variable(head->child3->key.lexeme);
 	element* result = malloc(sizeof(struct element));
-	bool expr_is_true = false;
+	bool if_expr_is_true = false;	// IF func
+	bool cond_expr_is_true[3] = { false, false, false };	// COND func
 
 	switch (func_index + KEYWORD3)
 	{
+	case COND:
+		cond_expr_is_true[0] = comparison(head->child1->child1);
+		cond_expr_is_true[1] = comparison(head->child2->child1);
+		cond_expr_is_true[2] = comparison(head->child3->child1);
+
+		// 첫번째 expr가 참이면
+		if (cond_expr_is_true[0]) {
+			if (head->child1->child2->child2 == NULL)
+				result = func_type1(head->child1->child2);	// 매개변수가 1개면			
+			else
+				result = numeric_operation(head->child1->child2);	// 매개변수가 2개면
+		}
+		// 두번째 expr가 참이면
+		else if (cond_expr_is_true[1]) {
+			if (head->child2->child2->child2 == NULL)
+				result = func_type1(head->child2->child2);	// 매개변수가 1개면			
+			else
+				result = numeric_operation(head->child2->child2);	// 매개변수가 2개면
+		}
+		// 세번째 expr가 참이면
+		else if (cond_expr_is_true[2]) {
+			if (head->child3->child2->child2 == NULL)
+				result = func_type1(head->child3->child2);	// 매개변수가 1개면			
+			else
+				result = numeric_operation(head->child3->child2);	// 매개변수가 2개면
+		}
+		break;
 	case SUBST:
 		switch (head->child1->key.code) {
 		case INT_LIT: case ATOM: /*case T: */
@@ -400,22 +425,22 @@ element* func_type3(const struct TreeNode* const head)
 		}
 		break;
 	case IF:
-		expr_is_true = comparison(head->child1);
+		if_expr_is_true = comparison(head->child1);
 
 		// child1(expr)이 true면,
 		// child2(stmt1) 수행;
-		if (expr_is_true) {
+		if (if_expr_is_true) {
 			if (head->child2->child2 == NULL)
-				func_type1(head->child2);	// 매개변수가 1개면			
+				result = func_type1(head->child2);	// 매개변수가 1개면			
 			else
-				numeric_operation(head->child2);
+				result = numeric_operation(head->child2);	// 매개변수가 2개면
 		}
 		// child3(stmt2) 수행
 		else {
 			if (head->child3->child2 == NULL)
-				func_type1(head->child3);
+				result = func_type1(head->child3);
 			else
-				numeric_operation(head->child3);
+				result = numeric_operation(head->child3);
 		}
 		break;
 	default:
@@ -425,19 +450,56 @@ element* func_type3(const struct TreeNode* const head)
 	return result;
 }
 
-element* func_type4() {
-	char* keywords[] = { "LIST", "APPEND", "CONS" };
+// 매개변수의 개수가 유동적인 함수
+element* func_type4(const struct TreeNode* const head) {
+	char* keywords[] = { "LIST", "APPEND" };
 	int keywords_len = sizeof(keywords) / sizeof(char*);	// keywords 배열 길이
-	int func_index = find_func_index(keywords, keywords_len);
+	int func_index = find_func_index(head, keywords, keywords_len);
 
-	Variable* var = find_variable(head->child1->key.lexeme);
+	//Variable* var = find_variable(head->child1->key.lexeme);
 	element* result = malloc(sizeof(struct element));
+	TreeNode* temp = head->child1;
+	int index, i;
+
+	switch (func_index + KEYWORD4)
+	{
+	case LIST:
+		result->code = LIST_CODE;
+
+		index = 0;
+		while (temp != NULL) {
+			result->listElem[index] = malloc(sizeof(struct element));
+			result->listElem[index]->code = temp->key.code;
+			strcpy(result->listElem[index]->lexeme, temp->key.lexeme);
+
+			index++;
+			temp = temp->child1;
+		}
+		break;
+	case APPEND:
+		result->code = LIST_CODE;
+
+		index = 0;
+		while (temp != NULL) {
+			for (i = 0; temp->key.listElem[i] != NULL; i++) {
+				result->listElem[index + i] = malloc(sizeof(struct element));
+				result->listElem[index + i]->code = temp->key.listElem[i]->code;
+				strcpy(result->listElem[index + i]->lexeme, temp->key.listElem[i]->lexeme);
+			}
+
+			index += i;
+			temp = temp->child1;
+		}
+		break;
+	default:
+		break;
+	}
 
 	return result;
 }
 
 // 어떤 함수인지 찾기
-int find_func_index(char* keywords[], int len)
+int find_func_index(const struct TreeNode* const head, char* keywords[], int len)
 {
 	int func_index = -1;
 
@@ -500,7 +562,7 @@ Variable* find_variable(char* var)
 }
 
 // CDR FUNC
-element* make_listElem_cdr(element* result, int len)
+element* make_listElem_cdr(const struct TreeNode* const head, element* result, int len)
 {
 	for (int i = 0; i < len - 1; i++) {
 		result->listElem[i] = malloc(sizeof(struct element));
@@ -512,7 +574,7 @@ element* make_listElem_cdr(element* result, int len)
 }
 
 // REVERSE FUNC
-element* make_listElem_reverse(element* result, int len)
+element* make_listElem_reverse(const struct TreeNode* const head, element* result, int len)
 {
 	for (int i = 0; i < len; i++) {
 		result->listElem[i] = malloc(sizeof(struct element));
