@@ -45,10 +45,10 @@ void main()
             printf("Next token: %d, Next lexeme: %s\n", tokens[i].code, tokens[i].lexeme);
         }
 
-        head1 = parser(); // parser 분석
+     //   head1 = parser(); // parser 분석
 
         /* parser 확인 함수 호출(포인터 지정) */
-        preorderPrint(head1);
+     //   preorderPrint(head1);
     }
 
     return;
