@@ -433,9 +433,9 @@ element *func_type3(const struct TreeNode *const head)
 	switch (func_index + KEYWORD3)
 	{
 	case COND:
-		cond_expr_is_true[0] = comparison(head->child1->child1);
-		cond_expr_is_true[1] = comparison(head->child2->child1);
-		cond_expr_is_true[2] = comparison(head->child3->child1);
+		cond_expr_is_true[0] = comparison(head->child1->child1)->code - NIL;
+		cond_expr_is_true[1] = comparison(head->child2->child1)->code - NIL;
+		cond_expr_is_true[2] = comparison(head->child3->child1)->code - NIL;
 
 		// 첫번째 expr가 참이면
 		if (cond_expr_is_true[0])
