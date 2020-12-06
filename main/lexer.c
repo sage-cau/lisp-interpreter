@@ -16,7 +16,7 @@ int lex();
 void ident_change();
 void string_check();
 void float_check();
-
+void atom_check();
 /* Global Variable */
 
 
@@ -51,8 +51,9 @@ int lexer()
     } while (nextToken != EOF);
 
     string_check(); // string 체크 띄어쓰기 되어 있는 IDENT-> STRING으로 묶기
-    float_check();  // 4.5 -> float로 분류
     ident_change(); // IDENT -> ATOM/STRING/IDENT 분류 이중리스트도 처리
+    float_check();  // 4.5 -> float로 분류
+    atom_check();
     fclose(in_fp);
 
     return 0;
@@ -334,11 +335,23 @@ void ident_change()
 
         sub_ele_num = ele_num;
 
-        if (tokens[sub_ele_num].code == DOUBLE_QUOT)
-            if(tokens[++sub_ele_num].code == IDENT)
+        if (tokens[sub_ele_num].code == DOUBLE_QUOT) {
+            if (tokens[++sub_ele_num].code == IDENT)
                 tokens[sub_ele_num].code = STRING;
+        }    
+    }
+    return;
+}
+void atom_check()
+{
+    int ele_num, sub_ele_num;
+    int list_end = 0;
 
-        else if (tokens[sub_ele_num].code == APOSTROPHE) {
+    for (ele_num = 0; ele_num < num; ele_num++) {
+
+        sub_ele_num = ele_num;
+
+        if (tokens[sub_ele_num].code == APOSTROPHE) {
             sub_ele_num++;
             if (tokens[sub_ele_num].code == LEFT_PAREN) {
                 list_end++;
@@ -355,12 +368,12 @@ void ident_change()
 
             else if (tokens[sub_ele_num].code == IDENT)
                 tokens[sub_ele_num].code = ATOM;
-        
+
         }
+            
     }
     return;
 }
-
 
 /* " (/+/4/./5/5/./5/) " -> " (/+/4.5/5.5/) " 다음으로 변환 */
 void float_check()

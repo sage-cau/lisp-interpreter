@@ -5,10 +5,9 @@
 
 #include "total.h"
 
-
 bool isSyntaxError = false;
 static element* tokenList;
-int curr = -1;
+int curr;
 static element nextToken; //lexer의 nextChar과 역할이 비슷한 변수입니다.
 
 /* Token codes */
@@ -57,6 +56,8 @@ void destroyTree(TreeNode* root);
 void printTree(TreeNode* root);
 void preorderPrint(TreeNode* root);
 
+
+/*****    main driver    *****/
 TreeNode* parser() {
     curr = -1; // 초기화
     TreeNode* head = NULL;
@@ -69,40 +70,6 @@ TreeNode* parser() {
     return head;
 }
 
-/*****    main driver    *****/
-/*실제로는 이 함수를 사용할 예정입니다.
-TreeNode* parser(element tokens[]) {
-    TreeNode* head = NULL;
-    tokenList = tokens;
-    head = block();
-    if(isSyntaxError) {
-        destroyTree(head);
-        //lexer에서 리턴하는 tokens가 동적 메모리 할당인 경우
-        //free(tokenList);
-        return NULL;
-    }
-    return head;
-}*/
-/*
-int main() {
-    element tokens[12] = { {LEFT_PAREN, "("},
-                        {FUNC_TYPE2, "SETQ"},
-                        {IDENT, "X"},
-                        {APOSTROPHE, "‘"},
-                        {LEFT_PAREN, "("},
-                        {LEFT_PAREN, "("},
-                        {ATOM, "X"},
-                        {RIGHT_PAREN, ")"},
-                        {ATOM, "Y"},
-                        {ATOM, "Z"},
-                        {RIGHT_PAREN, ")"},
-                        {RIGHT_PAREN, ")"} }; // lexer에서 리턴해 준 token들이라고 가정.
-
-    tokenList = tokens;
-    TreeNode* head = block();
-    preorderPrint(head);
-}
-*/
 
 /* error - 에러 처리 함수 */
 static TreeNode* error(char* message) {
@@ -216,13 +183,7 @@ static TreeNode* par() {
         || nextToken.code == ATOM || nextToken.code == NIL || nextToken.code == FLOAT_LIT)
         return new_node(nextToken);
 
-    if (nextToken.code == APOSTROPHE) {
-        getToken();
-        if (nextToken.code == LEFT_PAREN)
-            return list();
-    }
-
-    return error("there is a token that parser can't validate!");
+    return list();
 }
 
 
@@ -237,23 +198,35 @@ static TreeNode* list() {
     root->key.code = LIST_CODE;
 
     TreeNode* temp = NULL;
-    int pos = 0;  // pos: root의 listElem의 index
-    while (1) {
+    int pos = 0;
+    if (nextToken.code == APOSTROPHE) {
         getToken();
-        if (nextToken.code == RIGHT_PAREN)
-            break;
-        else if (nextToken.code == EOF)
-            return error("no more tokens to parse");
+        if (nextToken.code == LEFT_PAREN) {
+            while (1) {
+                getToken();
+                if (nextToken.code == RIGHT_PAREN)
+                    break;
+                if (nextToken.code == EOF)
+                    return error("no more tokens to parse");
 
-        else if (nextToken.code == LEFT_PAREN)
-            temp = list();
-        else
-            temp = par();
-        root->key.listElem[pos] = &temp->key;
-        pos++;
+                temp = par();
+                if (temp->key.code != LIST_CODE) {
+                    root->key.listElem[pos] = &temp->key;
+                }
+                else {  //리스트의 원소 중에 또 리스트가 있는 경우..
+                    for (int i = 0; temp->key.listElem[i] != NULL; i++)
+                        root->key.listElem[pos]->listElem[i] = temp->key.listElem[i];
+                }
+                pos++;
+            }
+            return root;
+        }
     }
-    return root;
+    return error("there is a token that parser can't validate!");
 }
+// 현재 코드로는 '((x) y z) 처럼 원소가 ( )로 둘러싸여있는건 인식 못함. 수정할 사항..
+// (LIST X 1 2) 에서 X는 IDENT 인데, '(X 1 2) 에서 X는 ATOM 이라고 하네요... <LIST> 의 Rule 바꿔야 할 수도..
+
 
 
 /***********************************/
@@ -290,7 +263,8 @@ void destroyTree(TreeNode* root)
 
 /* 트리 출력 함수 (테스트용) */
 void printTree(TreeNode* root) {
-    printf("현재 노드 {code: %d lexeme: %s}", root->key.code, root->key.lexeme);
+    if (root->key.code != LIST_CODE)
+        printf("현재 노드 {code: %d lexeme: %s}", root->key.code, root->key.lexeme);
     if (root->key.code == LIST_CODE) {
         printf(" *이 노드는 lexeme 대신 listElem를 갖습니다: ");
         for (int i = 0; root->key.listElem[i] != NULL; i++)

@@ -80,7 +80,7 @@ int lex();
 void ident_change();
 void string_check();
 void float_check();
-
+void atom_check();
 /* parser ÇÔ¼öµé */
 
 static TreeNode* error(char* message);
