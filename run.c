@@ -203,7 +203,7 @@ element *func_type2(const struct TreeNode *head)
 			Variable *temp = (Variable *)malloc(sizeof(Variable));
 			strcpy(temp->name, head->child1->key.lexeme);
 			temp->value = head->child2->key;
-			temp->next = v_head;
+			temp->next = *v_head;
 			*v_head = temp;
 		}
 		else
@@ -344,6 +344,7 @@ element *func_type2(const struct TreeNode *head)
 	}
 }
 
+// 비교 연산 함수
 element *comparison(const struct TreeNode *const head)
 {
 	if (head->child1->key.code != INT_LIT && head->child1->key.code != FLOAT_LIT &&
@@ -380,6 +381,7 @@ element *comparison(const struct TreeNode *const head)
 	return result;
 }
 
+// 사칙 연산 함수
 element *numeric_operation(const struct TreeNode *const head)
 {
 	element *result = malloc(sizeof(struct element));
@@ -488,14 +490,14 @@ element *func_type3(const struct TreeNode *const head)
 
 		result->code = LIST_CODE;
 
-		for (int i = 0; head->child2->key.listElem[i] != NULL; i++)
+		for (int i = 0; head->child3->key.listElem[i] != NULL; i++)
 		{
 			result->listElem[i] = malloc(sizeof(struct element));
 
 			if (!strcmp(head->child2->key.lexeme, head->child3->key.listElem[i]->lexeme))
-				strcpy(result->listElem[i], head->child1->key.lexeme);
+				strcpy(result->listElem[i]->lexeme, head->child1->key.lexeme);
 			else
-				strcpy(result->listElem[i], head->child3->key.listElem[i]->lexeme);
+				strcpy(result->listElem[i]->lexeme, head->child3->key.listElem[i]->lexeme);
 		}
 		break;
 	case IF:
